@@ -1,0 +1,103 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "ab": 0.01,
+    "bc": 0.01,
+    "ca": 0.01
+  },
+  "sketch": {
+    "id": "triangle_distance",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "a",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "kind": "point2d",
+        "seed": [
+          10,
+          0
+        ]
+      },
+      {
+        "id": "c",
+        "kind": "point2d",
+        "seed": [
+          5,
+          7
+        ]
+      },
+      {
+        "id": "ab",
+        "kind": "line_segment2d",
+        "start": "a",
+        "end": "b"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "fix",
+        "type": "point_fixed2d",
+        "point": "a",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "base_h",
+        "type": "horizontal",
+        "line": "ab"
+      },
+      {
+        "id": "ab",
+        "type": "distance",
+        "from": "a",
+        "to": "b",
+        "dimension": "ab"
+      },
+      {
+        "id": "bc",
+        "type": "distance",
+        "from": "b",
+        "to": "c",
+        "dimension": "bc"
+      },
+      {
+        "id": "ca",
+        "type": "distance",
+        "from": "c",
+        "to": "a",
+        "dimension": "ca"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

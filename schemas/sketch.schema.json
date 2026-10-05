@@ -1,0 +1,1520 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "constraints": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "point": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "point_fixed2d"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "point",
+              "at"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "coincident"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "arc": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "endpoint": {
+                "enum": [
+                  "start",
+                  "end"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "point": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "arc_endpoint_coincident"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "arc",
+              "endpoint",
+              "point"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "line": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "horizontal"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "line"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "line": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "vertical"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "line"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "parallel"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "perpendicular"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "equal_length"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "concentric"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "equal_radius"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "enum": [
+                  "X",
+                  "Y"
+                ],
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "from": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "to": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "axis_distance2d"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "from",
+              "to",
+              "axis",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "from": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "to": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "distance"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "from",
+              "to",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "circle": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "radius"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "circle",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "circle": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "diameter"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "circle",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "line": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "point": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "side": {
+                "enum": [
+                  "left",
+                  "right"
+                ],
+                "type": "string"
+              },
+              "type": {
+                "const": "point_line_distance"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "point",
+              "line",
+              "dimension",
+              "side"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "directed": {
+                "default": true,
+                "type": "boolean"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "angle"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "arc": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "arc_start_angle"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "arc",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "arc": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "dimension": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "arc_sweep"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "arc",
+              "dimension"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "enum": [
+                  "X",
+                  "Y"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "points": {
+                "items": {
+                  "maxLength": 96,
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 3,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "signed": {
+                "const": true
+              },
+              "type": {
+                "const": "equal_spacing"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "points",
+              "axis",
+              "signed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "circle": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "domain": {
+                "enum": [
+                  "segment",
+                  "infinite"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "line": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "side": {
+                "enum": [
+                  "left",
+                  "right"
+                ],
+                "type": "string"
+              },
+              "type": {
+                "const": "tangent_line_circle"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "line",
+              "circle",
+              "domain",
+              "side"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "arc": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "domain": {
+                "enum": [
+                  "segment",
+                  "infinite"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "line": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "side": {
+                "enum": [
+                  "left",
+                  "right"
+                ],
+                "type": "string"
+              },
+              "type": {
+                "const": "tangent_line_arc"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "line",
+              "arc",
+              "domain",
+              "side"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "branch": {
+                "enum": [
+                  "external",
+                  "internal"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "internal_outer": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "tangent_circle_circle"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b",
+              "branch"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "branch": {
+                "enum": [
+                  "external",
+                  "internal"
+                ],
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "internal_outer": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "mode": {
+                "default": "driving",
+                "enum": [
+                  "driving",
+                  "reference"
+                ],
+                "type": "string"
+              },
+              "requirement_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "type": {
+                "const": "tangent_arc_arc"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "a",
+              "b",
+              "branch"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 256,
+      "minItems": 0,
+      "type": "array"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "entities": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "construction": {
+                "default": false,
+                "type": "boolean"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "point2d"
+              },
+              "seed": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "seed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "construction": {
+                "default": false,
+                "type": "boolean"
+              },
+              "end": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "line_segment2d"
+              },
+              "start": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "start",
+              "end"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "construction": {
+                "default": false,
+                "type": "boolean"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "circle2d"
+              },
+              "radius_seed": {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "center",
+              "radius_seed"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "construction": {
+                "default": false,
+                "type": "boolean"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "arc2d"
+              },
+              "radius_seed": {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              "start_angle_seed": {
+                "type": "number"
+              },
+              "sweep_seed": {
+                "exclusiveMaximum": 360,
+                "exclusiveMinimum": -360,
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "center",
+              "radius_seed",
+              "start_angle_seed",
+              "sweep_seed"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 128,
+      "minItems": 1,
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "profiles": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "holes": {
+            "default": [],
+            "items": {
+              "items": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "maxItems": 128,
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "maxItems": 32,
+            "minItems": 0,
+            "type": "array"
+          },
+          "id": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "outer": {
+            "items": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "maxItems": 128,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "outer"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "type": "array"
+    },
+    "solve": {
+      "additionalProperties": false,
+      "default": {},
+      "properties": {
+        "allowed_strategies": {
+          "default": [
+            "declared_seed"
+          ],
+          "items": {
+            "enum": [
+              "declared_seed",
+              "last_good_seed"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "backend": {
+          "default": "slvs_3_2",
+          "enum": [
+            "slvs_3_2"
+          ],
+          "type": "string"
+        },
+        "branch_policy": {
+          "default": "preserve_declared",
+          "enum": [
+            "preserve_declared"
+          ],
+          "type": "string"
+        },
+        "diagnostics": {
+          "additionalProperties": false,
+          "default": {
+            "max_seconds": 5.0,
+            "when": "failure_or_redundancy"
+          },
+          "properties": {
+            "max_seconds": {
+              "exclusiveMinimum": 0,
+              "maximum": 30,
+              "type": "number"
+            },
+            "when": {
+              "enum": [
+                "failure_or_redundancy",
+                "never"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "when",
+            "max_seconds"
+          ],
+          "type": "object"
+        },
+        "max_attempts": {
+          "default": 1,
+          "maximum": 3,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "redundant_solved": {
+          "default": "report_and_verify",
+          "enum": [
+            "report_and_verify",
+            "reject"
+          ],
+          "type": "string"
+        },
+        "underconstrained": {
+          "default": "reject",
+          "enum": [
+            "reject"
+          ],
+          "type": "string"
+        },
+        "verification": {
+          "additionalProperties": false,
+          "default": {
+            "angle_tolerance_deg": 0.001,
+            "length_tolerance_mm": 0.001
+          },
+          "properties": {
+            "angle_tolerance_deg": {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            "length_tolerance_mm": {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            }
+          },
+          "required": [
+            "length_tolerance_mm",
+            "angle_tolerance_deg"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "workplane": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "enum": [
+                "world_xy",
+                "world_xz",
+                "world_yz"
+              ],
+              "type": "string"
+            },
+            "kind": {
+              "const": "datum"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "frame"
+            },
+            "origin": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            },
+            "x_axis": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            },
+            "y_axis": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "id",
+            "origin",
+            "x_axis",
+            "y_axis"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "workplane",
+    "entities",
+    "constraints",
+    "profiles"
+  ],
+  "title": "Hard Surface Workbench sketch 1.0",
+  "type": "object"
+}

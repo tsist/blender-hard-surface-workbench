@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "mode": {
+      "default": "modifier",
+      "enum": [
+        "modifier",
+        "mesh_apply"
+      ],
+      "type": "string"
+    },
+    "offset": {
+      "default": -1.0,
+      "maximum": 1,
+      "minimum": -1,
+      "type": "number"
+    },
+    "op": {
+      "const": "shell.solidify"
+    },
+    "target": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "data_id": {
+              "maxLength": 36,
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "object_ref"
+            },
+            "object_id": {
+              "maxLength": 36,
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "type": "string"
+            },
+            "revision": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": {
+              "const": "MESH"
+            }
+          },
+          "required": [
+            "kind",
+            "object_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "step_output"
+            },
+            "port": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "step_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "step_id",
+            "port"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "feature_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "feature_ref"
+            },
+            "port": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "feature_id",
+            "port"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "thickness": {
+      "oneOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "op",
+    "target",
+    "thickness"
+  ],
+  "title": "Hard Surface Workbench shell.solidify 1.0",
+  "type": "object"
+}

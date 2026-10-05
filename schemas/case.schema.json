@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "strategy": {
+      "enum": [
+        "declared",
+        "boolean_exact",
+        "boolean_manifold",
+        "tessellation_refine"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "strategy"
+  ],
+  "title": "Hard Surface Workbench case 1.0",
+  "type": "object"
+}

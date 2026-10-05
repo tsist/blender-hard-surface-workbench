@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "center": {
+      "default": [
+        0,
+        0,
+        0
+      ],
+      "items": {
+        "type": "number"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "type": "array"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "depth": {
+      "oneOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "op": {
+      "const": "primitive.cylinder"
+    },
+    "radius": {
+      "oneOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "segments": {
+      "default": 64,
+      "maximum": 4096,
+      "minimum": 3,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "op",
+    "radius",
+    "depth"
+  ],
+  "title": "Hard Surface Workbench primitive.cylinder 1.0",
+  "type": "object"
+}

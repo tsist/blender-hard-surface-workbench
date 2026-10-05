@@ -1,0 +1,541 @@
+{
+  "schema_version": "1.0",
+  "description": "Independent synthetic public qualification parts; dimensions are illustrative test inputs, never production design data or constructor presets.",
+  "nominal_tolerance_mm": 1e-08,
+  "cases": [
+    {
+      "id": "panel_compact_connector",
+      "parameters": {
+        "op": "quad.panel",
+        "size": [
+          48,
+          32
+        ],
+        "center": [
+          7,
+          -5
+        ],
+        "z_min": -2,
+        "z_max": 2,
+        "corner_radius": 4,
+        "edge_bevel": 0.4,
+        "chord_tolerance": 0.02,
+        "target_edge_length": 3.2,
+        "max_segments": 512,
+        "holes": [
+          {
+            "id": "counterbore_a",
+            "kind": "circle",
+            "center": [
+              -4,
+              -5
+            ],
+            "radius": 1.7,
+            "counterbore": {
+              "radius": 3.1,
+              "depth": 1.2,
+              "side": "top"
+            }
+          },
+          {
+            "id": "slot_a",
+            "kind": "rounded_rectangle",
+            "center": [
+              18,
+              -5
+            ],
+            "size": [
+              9,
+              5
+            ],
+            "radius": 1.8
+          }
+        ],
+        "lips": []
+      }
+    },
+    {
+      "id": "panel_long_mount",
+      "parameters": {
+        "op": "quad.panel",
+        "size": [
+          90,
+          24
+        ],
+        "center": [
+          -12,
+          19
+        ],
+        "z_min": 4,
+        "z_max": 7,
+        "corner_radius": 3,
+        "edge_bevel": 0.25,
+        "chord_tolerance": 0.03,
+        "target_edge_length": 3.5,
+        "max_segments": 512,
+        "holes": [
+          {
+            "id": "round_left",
+            "kind": "circle",
+            "center": [
+              -40,
+              19
+            ],
+            "radius": 2.2
+          },
+          {
+            "id": "round_right",
+            "kind": "circle",
+            "center": [
+              14,
+              19
+            ],
+            "radius": 2.2
+          },
+          {
+            "id": "slot_middle",
+            "kind": "rounded_rectangle",
+            "center": [
+              -12,
+              19
+            ],
+            "size": [
+              18,
+              6
+            ],
+            "radius": 3
+          }
+        ],
+        "lips": [
+          {
+            "id": "lip_left",
+            "bounds": [
+              -48,
+              10,
+              -35,
+              12
+            ],
+            "z_min": 1
+          }
+        ]
+      },
+      "regression": "Keep fixed: disjoint circle and slot layouts must not inherit unusable annuli from nearby artificial patch events."
+    },
+    {
+      "id": "panel_square_carrier",
+      "parameters": {
+        "op": "quad.panel",
+        "size": [
+          68,
+          68
+        ],
+        "center": [
+          25,
+          -30
+        ],
+        "z_min": -6,
+        "z_max": -1,
+        "corner_radius": 7,
+        "edge_bevel": 0.6,
+        "chord_tolerance": 0.018,
+        "target_edge_length": 3.6,
+        "max_segments": 512,
+        "holes": [
+          {
+            "id": "bore_lower_left",
+            "kind": "circle",
+            "center": [
+              9,
+              -46
+            ],
+            "radius": 2.5,
+            "counterbore": {
+              "radius": 4.2,
+              "depth": 2.5,
+              "side": "bottom"
+            }
+          },
+          {
+            "id": "bore_lower_right",
+            "kind": "circle",
+            "center": [
+              41,
+              -46
+            ],
+            "radius": 2.1
+          },
+          {
+            "id": "bore_upper_left",
+            "kind": "circle",
+            "center": [
+              9,
+              -14
+            ],
+            "radius": 3.3
+          }
+        ],
+        "lips": [
+          {
+            "id": "lip_upper",
+            "bounds": [
+              25,
+              -23,
+              44,
+              -18
+            ],
+            "z_min": -10
+          }
+        ]
+      }
+    },
+    {
+      "id": "shell_compact_two_ports",
+      "parameters": {
+        "op": "quad.shell",
+        "size": [
+          74,
+          54,
+          26
+        ],
+        "center": [
+          -9,
+          13
+        ],
+        "z_min": -4,
+        "corner_radius": 6.5,
+        "wall_thickness": 2.4,
+        "base_thickness": 2.8,
+        "edge_bevel": 0.4,
+        "chord_tolerance": 0.025,
+        "target_edge_length": 3.5,
+        "max_segments": 512,
+        "posts": [
+          {
+            "id": "post_center",
+            "center": [
+              -9,
+              13
+            ],
+            "radius": 4,
+            "hole_radius": 1.8,
+            "z_top": 7.2,
+            "hole_top": 3.3
+          }
+        ],
+        "openings": [
+          {
+            "id": "port_front",
+            "side": "front",
+            "center": [
+              -9,
+              9
+            ],
+            "size": [
+              13,
+              7
+            ],
+            "radius": 2.1
+          },
+          {
+            "id": "port_right",
+            "side": "right",
+            "center": [
+              13,
+              8
+            ],
+            "size": [
+              11,
+              6
+            ],
+            "radius": 1.7
+          }
+        ],
+        "corner_seats": [
+          {
+            "id": "seat_southwest",
+            "bounds": [
+              -43.6,
+              -11.6,
+              -32.6,
+              -1.5999999999999996
+            ],
+            "hole_center": [
+              -38.1,
+              -6.6
+            ],
+            "hole_radius": 1.6,
+            "z_top": 25.3,
+            "hole_bottom": 18.7
+          },
+          {
+            "id": "seat_southeast",
+            "bounds": [
+              14.600000000000001,
+              -11.6,
+              25.6,
+              -1.5999999999999996
+            ],
+            "hole_center": [
+              20.1,
+              -6.6
+            ],
+            "hole_radius": 1.6,
+            "z_top": 25.3,
+            "hole_bottom": 18.7
+          },
+          {
+            "id": "seat_northeast",
+            "bounds": [
+              14.600000000000001,
+              27.6,
+              25.6,
+              37.6
+            ],
+            "hole_center": [
+              20.1,
+              32.6
+            ],
+            "hole_radius": 1.6,
+            "z_top": 25.3,
+            "hole_bottom": 18.7
+          },
+          {
+            "id": "seat_northwest",
+            "bounds": [
+              -43.6,
+              27.6,
+              -32.6,
+              37.6
+            ],
+            "hole_center": [
+              -38.1,
+              32.6
+            ],
+            "hole_radius": 1.6,
+            "z_top": 25.3,
+            "hole_bottom": 18.7
+          }
+        ]
+      },
+      "regression": "Keep fixed: openings on orthogonal walls have nearby projected patch events; nominal profiles and exterior chord bounds remain exact."
+    },
+    {
+      "id": "shell_wide_three_ports",
+      "parameters": {
+        "op": "quad.shell",
+        "size": [
+          116,
+          84,
+          37
+        ],
+        "center": [
+          36,
+          -22
+        ],
+        "z_min": 5.5,
+        "corner_radius": 8.5,
+        "wall_thickness": 3.2,
+        "base_thickness": 3.6,
+        "edge_bevel": 0.5,
+        "chord_tolerance": 0.03,
+        "target_edge_length": 4,
+        "max_segments": 512,
+        "posts": [
+          {
+            "id": "post_west",
+            "center": [
+              18,
+              -22
+            ],
+            "radius": 5.6,
+            "hole_radius": 2.1,
+            "z_top": 22.5,
+            "hole_top": 14.5
+          },
+          {
+            "id": "post_east",
+            "center": [
+              54,
+              -22
+            ],
+            "radius": 5.6,
+            "hole_radius": 2.1,
+            "z_top": 22.5,
+            "hole_top": 14.5
+          }
+        ],
+        "openings": [
+          {
+            "id": "port_front",
+            "side": "front",
+            "center": [
+              36,
+              23.5
+            ],
+            "size": [
+              20,
+              10
+            ],
+            "radius": 3
+          },
+          {
+            "id": "port_back",
+            "side": "back",
+            "center": [
+              36,
+              27.5
+            ],
+            "size": [
+              16,
+              8
+            ],
+            "radius": 2
+          },
+          {
+            "id": "port_left",
+            "side": "left",
+            "center": [
+              -22,
+              24.5
+            ],
+            "size": [
+              17,
+              9
+            ],
+            "radius": 2.5
+          }
+        ],
+        "corner_seats": [
+          {
+            "id": "seat_southwest",
+            "bounds": [
+              -18.8,
+              -60.8,
+              -4.800000000000001,
+              -47.8
+            ],
+            "hole_center": [
+              -11.8,
+              -54.3
+            ],
+            "hole_radius": 2.4,
+            "z_top": 46,
+            "hole_bottom": 36
+          },
+          {
+            "id": "seat_southeast",
+            "bounds": [
+              76.8,
+              -60.8,
+              90.8,
+              -47.8
+            ],
+            "hole_center": [
+              83.8,
+              -54.3
+            ],
+            "hole_radius": 2.4,
+            "z_top": 46,
+            "hole_bottom": 36
+          },
+          {
+            "id": "seat_northeast",
+            "bounds": [
+              76.8,
+              3.8000000000000007,
+              90.8,
+              16.8
+            ],
+            "hole_center": [
+              83.8,
+              10.3
+            ],
+            "hole_radius": 2.4,
+            "z_top": 46,
+            "hole_bottom": 36
+          },
+          {
+            "id": "seat_northwest",
+            "bounds": [
+              -18.8,
+              3.8000000000000007,
+              -4.800000000000001,
+              16.8
+            ],
+            "hole_center": [
+              -11.8,
+              10.3
+            ],
+            "hole_radius": 2.4,
+            "z_top": 46,
+            "hole_bottom": 36
+          }
+        ]
+      },
+      "regression": "Keep fixed: independently optimized wall fields must preserve matching outer and inner opening rings."
+    },
+    {
+      "id": "fastener_short_socket",
+      "parameters": {
+        "op": "quad.fastener",
+        "center": [
+          13,
+          -27
+        ],
+        "shaft_radius": 1.9,
+        "head_radius": 4.1,
+        "head_height": 2.8,
+        "shaft_length": 6.3,
+        "shoulder_z": -3.7,
+        "direction": 1,
+        "socket_flat_width": 3.2,
+        "socket_depth": 1.1,
+        "chord_tolerance": 0.02,
+        "target_edge_length": 2.5,
+        "max_segments": 512
+      }
+    },
+    {
+      "id": "fastener_long_plain",
+      "parameters": {
+        "op": "quad.fastener",
+        "center": [
+          -32,
+          8
+        ],
+        "shaft_radius": 2.6,
+        "head_radius": 4.8,
+        "head_height": 4.2,
+        "shaft_length": 23,
+        "shoulder_z": 12.4,
+        "direction": 1,
+        "socket_flat_width": 0,
+        "socket_depth": 0,
+        "chord_tolerance": 0.028,
+        "target_edge_length": 3.5,
+        "max_segments": 512
+      }
+    },
+    {
+      "id": "fastener_reverse_socket",
+      "parameters": {
+        "op": "quad.fastener",
+        "center": [
+          5,
+          41
+        ],
+        "shaft_radius": 1.15,
+        "head_radius": 2.75,
+        "head_height": 3.4,
+        "shaft_length": 12.7,
+        "shoulder_z": -8.6,
+        "direction": -1,
+        "socket_flat_width": 1.85,
+        "socket_depth": 1.4,
+        "chord_tolerance": 0.012,
+        "target_edge_length": 2.8,
+        "max_segments": 512
+      }
+    }
+  ]
+}

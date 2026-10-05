@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+evidence/
+runtime/
+dist/
+*.blend
+*.blend1
+*.whl
+*.so
+*.dll

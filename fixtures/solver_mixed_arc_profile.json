@@ -1,0 +1,126 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "radius": 0.005,
+    "start": 0,
+    "sweep": 3.141592653589793
+  },
+  "sketch": {
+    "id": "mixed_arc_profile",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "c",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "p0",
+        "kind": "point2d",
+        "seed": [
+          5,
+          0.1
+        ]
+      },
+      {
+        "id": "p1",
+        "kind": "point2d",
+        "seed": [
+          -5,
+          0.1
+        ]
+      },
+      {
+        "id": "a",
+        "kind": "arc2d",
+        "center": "c",
+        "radius_seed": 4.8,
+        "start_angle_seed": 2,
+        "sweep_seed": 175
+      },
+      {
+        "id": "baseline",
+        "kind": "line_segment2d",
+        "start": "p1",
+        "end": "p0"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "cfix",
+        "type": "point_fixed2d",
+        "point": "c",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "r",
+        "type": "radius",
+        "circle": "a",
+        "dimension": "radius"
+      },
+      {
+        "id": "start",
+        "type": "arc_start_angle",
+        "arc": "a",
+        "dimension": "start"
+      },
+      {
+        "id": "sweep",
+        "type": "arc_sweep",
+        "arc": "a",
+        "dimension": "sweep"
+      },
+      {
+        "id": "join_start",
+        "type": "arc_endpoint_coincident",
+        "arc": "a",
+        "endpoint": "start",
+        "point": "p0"
+      },
+      {
+        "id": "join_end",
+        "type": "arc_endpoint_coincident",
+        "arc": "a",
+        "endpoint": "end",
+        "point": "p1"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "semidisk",
+        "outer": [
+          "a",
+          "baseline"
+        ],
+        "holes": []
+      }
+    ],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "radius": 0.005,
+    "start": 0,
+    "sweep": 3.141592653589793
+  },
+  "sketch": {
+    "id": "arc_angles",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "c",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "a",
+        "kind": "arc2d",
+        "center": "c",
+        "radius_seed": 5.2,
+        "start_angle_seed": 5,
+        "sweep_seed": 170
+      }
+    ],
+    "constraints": [
+      {
+        "id": "cfix",
+        "type": "point_fixed2d",
+        "point": "c",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "r",
+        "type": "radius",
+        "circle": "a",
+        "dimension": "radius"
+      },
+      {
+        "id": "start",
+        "type": "arc_start_angle",
+        "arc": "a",
+        "dimension": "start"
+      },
+      {
+        "id": "sweep",
+        "type": "arc_sweep",
+        "arc": "a",
+        "dimension": "sweep"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

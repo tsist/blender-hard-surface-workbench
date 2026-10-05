@@ -1,0 +1,61 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "underconstrained",
+  "dimension_values": {},
+  "sketch": {
+    "id": "underconstrained",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "a",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "kind": "point2d",
+        "seed": [
+          10,
+          0
+        ]
+      },
+      {
+        "id": "l",
+        "kind": "line_segment2d",
+        "start": "a",
+        "end": "b"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "h",
+        "type": "horizontal",
+        "line": "l"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

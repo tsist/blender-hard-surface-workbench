@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "feature_step": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        },
+        "kind": {
+          "const": "feature_role"
+        },
+        "role": {
+          "enum": [
+            "outer_boundary_edges",
+            "all_edges",
+            "all_faces"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "feature_step",
+        "role"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "data_id": {
+          "maxLength": 36,
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "type": "string"
+        },
+        "domain": {
+          "enum": [
+            "VERTEX",
+            "EDGE",
+            "FACE"
+          ],
+          "type": "string"
+        },
+        "evaluation_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "geometry_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "indices": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 200000,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "kind": {
+          "const": "index_selection"
+        },
+        "object_id": {
+          "maxLength": 36,
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "type": "string"
+        },
+        "position_dependent": {
+          "default": false,
+          "type": "boolean"
+        },
+        "topology_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "object_id",
+        "data_id",
+        "domain",
+        "indices",
+        "topology_sha256"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "data_id": {
+          "maxLength": 36,
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "type": "string"
+        },
+        "domain": {
+          "enum": [
+            "VERTEX",
+            "EDGE",
+            "FACE"
+          ],
+          "type": "string"
+        },
+        "expected_count": {
+          "maximum": 200000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "attribute_selection"
+        },
+        "name": {
+          "maxLength": 63,
+          "minLength": 1,
+          "type": "string"
+        },
+        "object_id": {
+          "maxLength": 36,
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "type": "string"
+        },
+        "topology_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "INT",
+            "BOOLEAN"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "object_id",
+        "data_id",
+        "name",
+        "domain",
+        "type",
+        "value",
+        "expected_count",
+        "topology_sha256"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "Hard Surface Workbench selection 1.0"
+}

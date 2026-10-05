@@ -1,0 +1,432 @@
+{
+  "schema_version": "1.0",
+  "command": "hardsurface.run",
+  "params": {
+    "manifest_version": "1.0",
+    "request_id": "native-linked-two-features",
+    "purpose": "contract_fixture",
+    "source": {
+      "kind": "new_scene",
+      "project_id": "native_linkage_fixture",
+      "length_unit": "mm",
+      "up_axis": "Z"
+    },
+    "context": {
+      "scene": "Fixture",
+      "view_layer": "ViewLayer",
+      "frame": 1,
+      "evaluation": "RENDER"
+    },
+    "resources": [],
+    "design": {
+      "mode": "create_if_absent",
+      "expected_state": "absent",
+      "state": {
+        "revision": 1,
+        "dimensions": [
+          {
+            "id": "width",
+            "role": "driving",
+            "quantity": "length",
+            "value": 80.0,
+            "unit": "mm"
+          },
+          {
+            "id": "height",
+            "role": "driving",
+            "quantity": "length",
+            "value": 50.0,
+            "unit": "mm"
+          },
+          {
+            "id": "hole_x",
+            "role": "driving",
+            "quantity": "length",
+            "value": 20.0,
+            "unit": "mm"
+          },
+          {
+            "id": "hole_y",
+            "role": "driving",
+            "quantity": "length",
+            "value": 25.0,
+            "unit": "mm"
+          },
+          {
+            "id": "diameter",
+            "role": "driving",
+            "quantity": "length",
+            "value": 10.0,
+            "unit": "mm"
+          },
+          {
+            "id": "depth",
+            "role": "driving",
+            "quantity": "length",
+            "value": 5,
+            "unit": "mm"
+          }
+        ],
+        "sketches": [
+          {
+            "id": "plate_linkage",
+            "workplane": {
+              "kind": "datum",
+              "id": "world_xy"
+            },
+            "entities": [
+              {
+                "id": "p0",
+                "kind": "point2d",
+                "seed": [
+                  0.1,
+                  0.1
+                ]
+              },
+              {
+                "id": "p1",
+                "kind": "point2d",
+                "seed": [
+                  77,
+                  0.2
+                ]
+              },
+              {
+                "id": "p2",
+                "kind": "point2d",
+                "seed": [
+                  78,
+                  48
+                ]
+              },
+              {
+                "id": "p3",
+                "kind": "point2d",
+                "seed": [
+                  0.2,
+                  49
+                ]
+              },
+              {
+                "id": "hc",
+                "kind": "point2d",
+                "seed": [
+                  21,
+                  23
+                ]
+              },
+              {
+                "id": "l0",
+                "kind": "line_segment2d",
+                "start": "p0",
+                "end": "p1"
+              },
+              {
+                "id": "l1",
+                "kind": "line_segment2d",
+                "start": "p1",
+                "end": "p2"
+              },
+              {
+                "id": "l2",
+                "kind": "line_segment2d",
+                "start": "p2",
+                "end": "p3"
+              },
+              {
+                "id": "l3",
+                "kind": "line_segment2d",
+                "start": "p3",
+                "end": "p0"
+              },
+              {
+                "id": "hole",
+                "kind": "circle2d",
+                "center": "hc",
+                "radius_seed": 4.5
+              }
+            ],
+            "constraints": [
+              {
+                "id": "anchor",
+                "type": "point_fixed2d",
+                "point": "p0",
+                "at": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id": "h0",
+                "type": "horizontal",
+                "line": "l0"
+              },
+              {
+                "id": "h2",
+                "type": "horizontal",
+                "line": "l2"
+              },
+              {
+                "id": "v1",
+                "type": "vertical",
+                "line": "l1"
+              },
+              {
+                "id": "v3",
+                "type": "vertical",
+                "line": "l3"
+              },
+              {
+                "id": "w",
+                "type": "axis_distance2d",
+                "from": "p0",
+                "to": "p1",
+                "axis": "X",
+                "dimension": "width"
+              },
+              {
+                "id": "h",
+                "type": "axis_distance2d",
+                "from": "p0",
+                "to": "p3",
+                "axis": "Y",
+                "dimension": "height"
+              },
+              {
+                "id": "hx",
+                "type": "axis_distance2d",
+                "from": "p0",
+                "to": "hc",
+                "axis": "X",
+                "dimension": "hole_x"
+              },
+              {
+                "id": "hy",
+                "type": "axis_distance2d",
+                "from": "p0",
+                "to": "hc",
+                "axis": "Y",
+                "dimension": "hole_y"
+              },
+              {
+                "id": "hd",
+                "type": "diameter",
+                "circle": "hole",
+                "dimension": "diameter"
+              }
+            ],
+            "profiles": [
+              {
+                "id": "plate",
+                "outer": [
+                  "l0",
+                  "l1",
+                  "l2",
+                  "l3"
+                ],
+                "holes": [
+                  [
+                    "hole"
+                  ]
+                ]
+              }
+            ],
+            "solve": {
+              "underconstrained": "reject",
+              "redundant_solved": "report_and_verify",
+              "branch_policy": "preserve_declared",
+              "max_attempts": 1,
+              "allowed_strategies": [
+                "declared_seed"
+              ],
+              "verification": {
+                "length_tolerance_mm": 0.001,
+                "angle_tolerance_deg": 0.001
+              },
+              "diagnostics": {
+                "when": "failure_or_redundancy",
+                "max_seconds": 5
+              }
+            }
+          }
+        ],
+        "features": [
+          {
+            "id": "plateA",
+            "program": {
+              "kind": "steps",
+              "steps": [
+                {
+                  "id": "solve",
+                  "op": "sketch.solve",
+                  "sketch_id": "plate_linkage"
+                },
+                {
+                  "id": "solved",
+                  "op": "checkpoint",
+                  "depends_on": [
+                    "solve"
+                  ]
+                },
+                {
+                  "id": "extrude",
+                  "op": "profile.extrude",
+                  "profile": {
+                    "kind": "step_output",
+                    "step_id": "solve",
+                    "port": "plate"
+                  },
+                  "depth": {
+                    "kind": "dimension_ref",
+                    "id": "depth"
+                  },
+                  "chord_tolerance": 0.01,
+                  "depends_on": [
+                    "solved"
+                  ]
+                },
+                {
+                  "id": "normal",
+                  "op": "normal.finish",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "extrude",
+                    "port": "body_object"
+                  },
+                  "method": "flat"
+                },
+                {
+                  "id": "measure",
+                  "op": "measure",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "normal",
+                    "port": "body_object"
+                  },
+                  "checks": [
+                    "dimensions",
+                    "closed_mesh",
+                    "volume"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "plateB",
+            "depends_on": [
+              "plateA"
+            ],
+            "program": {
+              "kind": "steps",
+              "steps": [
+                {
+                  "id": "extrude",
+                  "op": "profile.extrude",
+                  "profile": {
+                    "kind": "sketch_profile",
+                    "sketch_id": "plate_linkage",
+                    "profile_id": "plate"
+                  },
+                  "depth": 3,
+                  "chord_tolerance": 0.01
+                },
+                {
+                  "id": "position",
+                  "op": "object.transform",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "extrude",
+                    "port": "body_object"
+                  },
+                  "translation": [
+                    0,
+                    0,
+                    10
+                  ]
+                },
+                {
+                  "id": "measure",
+                  "op": "measure",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "position",
+                    "port": "body_object"
+                  },
+                  "checks": [
+                    "dimensions",
+                    "closed_mesh",
+                    "volume"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "protection": {
+      "source_write": "forbidden",
+      "shared_data": "reject_shared",
+      "manual_edits": "preserve_supported_nonconflicting",
+      "on_conflict": "pause"
+    },
+    "work_units": [
+      {
+        "id": "build",
+        "feature_ids": [
+          "plateA",
+          "plateB"
+        ],
+        "checks": [
+          "constraint_residuals",
+          "profile_validity",
+          "design_dimensions",
+          "closed_mesh",
+          "source_preserved",
+          "reopen"
+        ],
+        "failure_policy": "stop_job"
+      }
+    ],
+    "quality": {
+      "profile": "static_closed_mechanical_fixture",
+      "required": [
+        "constraint_residuals",
+        "profile_validity",
+        "design_dimensions",
+        "closed_mesh",
+        "preservation",
+        "reopen",
+        "dependencies"
+      ],
+      "visual": "not_applicable_fixture_only",
+      "user_feedback": "not_applicable_fixture_only"
+    },
+    "budgets": {
+      "max_total_steps": 32,
+      "max_geometry_vertices": 200000,
+      "max_geometry_loops": 1000000,
+      "wall_seconds": 180,
+      "cpu_threads": 2
+    },
+    "output": {
+      "publication": "candidate_only",
+      "report": "compact"
+    },
+    "preview": {
+      "engine": "CYCLES",
+      "device": "CPU",
+      "width": 384,
+      "height": 384,
+      "samples": 8,
+      "views": [
+        "three_quarter",
+        "top"
+      ]
+    },
+    "wire": {
+      "enabled": false
+    }
+  }
+}

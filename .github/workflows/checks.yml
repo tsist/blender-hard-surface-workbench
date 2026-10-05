@@ -1,0 +1,24 @@
+name: Hard Surface Workbench public checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Host contracts and numerical fixtures
+        run: python -B -m unittest discover -s tests -p 'test_*.py' -v
+      - name: First static package build
+        run: python -B scripts/build_distribution.py --output '${{ runner.temp }}/hard-surface-first'
+      - name: Independent static package build
+        run: python -B scripts/build_distribution.py --output '${{ runner.temp }}/hard-surface-second'
+      - name: Check byte-for-byte reproducibility
+        run: python -B scripts/verify_reproducible.py '${{ runner.temp }}/hard-surface-first' '${{ runner.temp }}/hard-surface-second'

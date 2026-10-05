@@ -1,0 +1,192 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "width": 0.095,
+    "height": 0.05,
+    "hole_x": 0.02,
+    "hole_y": 0.025,
+    "diameter": 0.016
+  },
+  "sketch": {
+    "id": "plate_linkage_changed",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "p0",
+        "kind": "point2d",
+        "seed": [
+          0.1,
+          0.1
+        ]
+      },
+      {
+        "id": "p1",
+        "kind": "point2d",
+        "seed": [
+          77,
+          0.2
+        ]
+      },
+      {
+        "id": "p2",
+        "kind": "point2d",
+        "seed": [
+          78,
+          48
+        ]
+      },
+      {
+        "id": "p3",
+        "kind": "point2d",
+        "seed": [
+          0.2,
+          49
+        ]
+      },
+      {
+        "id": "hc",
+        "kind": "point2d",
+        "seed": [
+          21,
+          23
+        ]
+      },
+      {
+        "id": "l0",
+        "kind": "line_segment2d",
+        "start": "p0",
+        "end": "p1"
+      },
+      {
+        "id": "l1",
+        "kind": "line_segment2d",
+        "start": "p1",
+        "end": "p2"
+      },
+      {
+        "id": "l2",
+        "kind": "line_segment2d",
+        "start": "p2",
+        "end": "p3"
+      },
+      {
+        "id": "l3",
+        "kind": "line_segment2d",
+        "start": "p3",
+        "end": "p0"
+      },
+      {
+        "id": "hole",
+        "kind": "circle2d",
+        "center": "hc",
+        "radius_seed": 4.5
+      }
+    ],
+    "constraints": [
+      {
+        "id": "anchor",
+        "type": "point_fixed2d",
+        "point": "p0",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "h0",
+        "type": "horizontal",
+        "line": "l0"
+      },
+      {
+        "id": "h2",
+        "type": "horizontal",
+        "line": "l2"
+      },
+      {
+        "id": "v1",
+        "type": "vertical",
+        "line": "l1"
+      },
+      {
+        "id": "v3",
+        "type": "vertical",
+        "line": "l3"
+      },
+      {
+        "id": "w",
+        "type": "axis_distance2d",
+        "from": "p0",
+        "to": "p1",
+        "axis": "X",
+        "dimension": "width"
+      },
+      {
+        "id": "h",
+        "type": "axis_distance2d",
+        "from": "p0",
+        "to": "p3",
+        "axis": "Y",
+        "dimension": "height"
+      },
+      {
+        "id": "hx",
+        "type": "axis_distance2d",
+        "from": "p0",
+        "to": "hc",
+        "axis": "X",
+        "dimension": "hole_x"
+      },
+      {
+        "id": "hy",
+        "type": "axis_distance2d",
+        "from": "p0",
+        "to": "hc",
+        "axis": "Y",
+        "dimension": "hole_y"
+      },
+      {
+        "id": "hd",
+        "type": "diameter",
+        "circle": "hole",
+        "dimension": "diameter"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "plate",
+        "outer": [
+          "l0",
+          "l1",
+          "l2",
+          "l3"
+        ],
+        "holes": [
+          [
+            "hole"
+          ]
+        ]
+      }
+    ],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

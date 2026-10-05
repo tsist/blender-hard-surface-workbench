@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "op": {
+      "const": "sketch.solve"
+    },
+    "sketch_id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "op",
+    "sketch_id"
+  ],
+  "title": "Hard Surface Workbench sketch.solve 1.0",
+  "type": "object"
+}

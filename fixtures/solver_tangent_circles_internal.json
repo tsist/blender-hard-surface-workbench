@@ -1,0 +1,103 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "y": 0,
+    "ra": 0.005,
+    "rb": 0.002
+  },
+  "sketch": {
+    "id": "tangent_circles_internal",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "ca",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "cb",
+        "kind": "point2d",
+        "seed": [
+          2.5,
+          0.1
+        ]
+      },
+      {
+        "id": "a",
+        "kind": "circle2d",
+        "center": "ca",
+        "radius_seed": 5
+      },
+      {
+        "id": "b",
+        "kind": "circle2d",
+        "center": "cb",
+        "radius_seed": 2
+      }
+    ],
+    "constraints": [
+      {
+        "id": "ca_fix",
+        "type": "point_fixed2d",
+        "point": "ca",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "cy",
+        "type": "axis_distance2d",
+        "from": "ca",
+        "to": "cb",
+        "axis": "Y",
+        "dimension": "y"
+      },
+      {
+        "id": "ra",
+        "type": "radius",
+        "circle": "a",
+        "dimension": "ra"
+      },
+      {
+        "id": "rb",
+        "type": "radius",
+        "circle": "b",
+        "dimension": "rb"
+      },
+      {
+        "id": "t",
+        "type": "tangent_circle_circle",
+        "a": "a",
+        "b": "b",
+        "branch": "internal",
+        "internal_outer": "a"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

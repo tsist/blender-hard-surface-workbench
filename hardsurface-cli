@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export PYTHONPATH="$ROOT"
+export PYTHONNOUSERSITE=1
+export PYTHONDONTWRITEBYTECODE=1
+CACHE_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/hs-unused-bytecode.XXXXXX")
+export PYTHONPYCACHEPREFIX="$CACHE_ROOT"
+exec "${BLENDERCTL_PYTHON:-python3}" -B -S -P -X "pycache_prefix=$CACHE_ROOT" -m hardsurface.host "$@"

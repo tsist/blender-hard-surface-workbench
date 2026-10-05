@@ -1,0 +1,892 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_reproduction": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "method_acceptance": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "performance": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "preservation": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "technical": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "user_feedback": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        "visual": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "reason": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "not_run",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "technical",
+        "preservation",
+        "dependency_reproduction",
+        "performance",
+        "visual",
+        "user_feedback",
+        "method_acceptance"
+      ],
+      "type": "object"
+    },
+    "candidate": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "file": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "sha256": {
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "verified_candidate",
+                "usable_delivery"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "sha256",
+            "bytes",
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "const": null
+        }
+      ]
+    },
+    "checkpoints": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "checkpoint_id": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "receipt": {
+            "additionalProperties": false,
+            "properties": {
+              "bytes": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "file": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              "sha256": {
+                "maxLength": 64,
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "file",
+              "sha256",
+              "bytes"
+            ],
+            "type": "object"
+          },
+          "state": {
+            "const": "accepted_checkpoint"
+          }
+        },
+        "required": [
+          "checkpoint_id",
+          "state",
+          "receipt"
+        ],
+        "type": "object"
+      },
+      "maxItems": 16,
+      "minItems": 0,
+      "type": "array"
+    },
+    "counts": {
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "steps_reused": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "units_accepted": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "units_blocked": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "units_failed": {
+          "maximum": 10000000,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "details_omitted": {
+      "type": "boolean"
+    },
+    "details_reference": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "file": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "domain_outcome": {
+      "enum": [
+        "pass",
+        "partial",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "error": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "detail_code": {
+              "maxLength": 128,
+              "type": "string"
+            },
+            "details_reference": {
+              "additionalProperties": false,
+              "properties": {
+                "bytes": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "file": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "sha256",
+                "bytes"
+              ],
+              "type": "object"
+            },
+            "message": {
+              "maxLength": 4096,
+              "type": "string"
+            },
+            "retry_class": {
+              "enum": [
+                "never",
+                "new_input_required",
+                "retriable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "retry_class"
+          ],
+          "type": "object"
+        },
+        {
+          "const": null
+        }
+      ]
+    },
+    "job_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "next_step": {
+      "maxLength": 4096,
+      "type": "string"
+    },
+    "report": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "file": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "report_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "source_protection": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "file": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "sha256": {
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        "original_source_observed": {
+          "additionalProperties": false,
+          "properties": {
+            "continuous_immutability_proven": {
+              "const": false
+            },
+            "status": {
+              "enum": [
+                "observed",
+                "changed",
+                "unknown",
+                "not_applicable"
+              ],
+              "type": "string"
+            },
+            "written_by_this_tool": {
+              "const": false
+            }
+          },
+          "required": [
+            "status",
+            "written_by_this_tool",
+            "continuous_immutability_proven"
+          ],
+          "type": "object"
+        },
+        "resources_guarded": {
+          "additionalProperties": false,
+          "properties": {
+            "accepted": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "files_count": {
+              "maximum": 256,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "guard_type": {
+              "maxLength": 128,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "unknown",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "accepted",
+            "files_count"
+          ],
+          "type": "object"
+        },
+        "staged_snapshot_guarded": {
+          "additionalProperties": false,
+          "properties": {
+            "accepted": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "files_count": {
+              "maximum": 256,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "guard_type": {
+              "maxLength": 128,
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail",
+                "unknown",
+                "not_applicable"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "accepted",
+            "files_count"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "original_source_observed",
+        "staged_snapshot_guarded",
+        "resources_guarded",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ],
+      "type": "string"
+    },
+    "topology_diagnostics": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "maximum": 128,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "mesh_state": {
+          "enum": [
+            "control",
+            "evaluated"
+          ],
+          "type": "string"
+        },
+        "statistics": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "file": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "sha256": {
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "disabled_by_request",
+            "failed",
+            "not_run"
+          ],
+          "type": "string"
+        },
+        "views": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bytes": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "file": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              "sha256": {
+                "maxLength": 64,
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "file",
+              "sha256",
+              "bytes"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "minItems": 0,
+          "type": "array"
+        }
+      },
+      "required": [
+        "status",
+        "mesh_state",
+        "components",
+        "views"
+      ],
+      "type": "object"
+    },
+    "warnings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "maxLength": 128,
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "maxItems": 16,
+      "minItems": 0,
+      "type": "array"
+    }
+  },
+  "required": [
+    "report_version",
+    "job_id",
+    "request_id",
+    "status",
+    "domain_outcome",
+    "candidate",
+    "acceptance",
+    "counts",
+    "error",
+    "source_protection",
+    "checkpoints",
+    "report",
+    "next_step",
+    "warnings"
+  ],
+  "title": "Hard Surface Workbench report 1.0",
+  "type": "object"
+}

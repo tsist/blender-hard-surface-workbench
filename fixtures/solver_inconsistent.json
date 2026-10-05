@@ -1,0 +1,60 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "inconsistent_or_redundant_nonconvergent",
+  "dimension_values": {},
+  "sketch": {
+    "id": "inconsistent",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "a",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "f1",
+        "type": "point_fixed2d",
+        "point": "a",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "f2",
+        "type": "point_fixed2d",
+        "point": "a",
+        "at": [
+          1,
+          0
+        ]
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

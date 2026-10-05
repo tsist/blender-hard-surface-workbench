@@ -1,0 +1,542 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "center": {
+      "default": [
+        0,
+        0
+      ],
+      "items": {
+        "oneOf": [
+          {
+            "type": "number"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "dimension_ref"
+              }
+            },
+            "required": [
+              "kind",
+              "id"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "type": "array"
+    },
+    "chord_tolerance": {
+      "default": 0.025,
+      "exclusiveMinimum": 0,
+      "maximum": 0.05,
+      "type": "number"
+    },
+    "corner_radius": {
+      "oneOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "edge_bevel": {
+      "default": 0.0,
+      "maximum": 1,
+      "minimum": 0,
+      "type": "number"
+    },
+    "holes": {
+      "default": [],
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "maxLength": 96,
+                          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "const": "dimension_ref"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "counterbore": {
+                "additionalProperties": false,
+                "properties": {
+                  "depth": {
+                    "oneOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "maxLength": 96,
+                            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "dimension_ref"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "radius": {
+                    "oneOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "maxLength": 96,
+                            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "dimension_ref"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "side": {
+                    "enum": [
+                      "top",
+                      "bottom"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "radius",
+                  "depth",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "circle"
+              },
+              "radius": {
+                "oneOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "maxLength": 96,
+                        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "dimension_ref"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "center",
+              "radius"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "maxLength": 96,
+                          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "const": "dimension_ref"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "rounded_rectangle"
+              },
+              "radius": {
+                "oneOf": [
+                  {
+                    "exclusiveMinimum": 0,
+                    "type": "number"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "maxLength": 96,
+                        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "dimension_ref"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "size": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "maxLength": 96,
+                          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "const": "dimension_ref"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "center",
+              "size",
+              "radius"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "lips": {
+      "default": [],
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "bounds": {
+            "items": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "maxLength": 96,
+                      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "const": "dimension_ref"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "maxItems": 4,
+            "minItems": 4,
+            "type": "array"
+          },
+          "id": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "z_min": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "maxLength": 96,
+                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                    "type": "string"
+                  },
+                  "kind": {
+                    "const": "dimension_ref"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "id"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "bounds",
+          "z_min"
+        ],
+        "type": "object"
+      },
+      "maxItems": 16,
+      "minItems": 0,
+      "type": "array"
+    },
+    "max_segments": {
+      "default": 512,
+      "maximum": 512,
+      "minimum": 12,
+      "type": "integer"
+    },
+    "op": {
+      "const": "quad.panel"
+    },
+    "size": {
+      "items": {
+        "oneOf": [
+          {
+            "exclusiveMinimum": 0,
+            "type": "number"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "dimension_ref"
+              }
+            },
+            "required": [
+              "kind",
+              "id"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "type": "array"
+    },
+    "target_edge_length": {
+      "default": 4.0,
+      "exclusiveMinimum": 0,
+      "maximum": 10,
+      "type": "number"
+    },
+    "z_max": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "z_min": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "op",
+    "size",
+    "corner_radius",
+    "z_min",
+    "z_max"
+  ],
+  "title": "Hard Surface Workbench quad.panel 1.0",
+  "type": "object"
+}

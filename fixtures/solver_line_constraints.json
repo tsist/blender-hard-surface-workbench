@@ -1,0 +1,220 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "distance": 0.005,
+    "angle": 0.7853981633974483
+  },
+  "sketch": {
+    "id": "line_constraints",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "a",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "kind": "point2d",
+        "seed": [
+          10,
+          0
+        ]
+      },
+      {
+        "id": "c",
+        "kind": "point2d",
+        "seed": [
+          0,
+          5
+        ]
+      },
+      {
+        "id": "d",
+        "kind": "point2d",
+        "seed": [
+          10,
+          5
+        ]
+      },
+      {
+        "id": "e",
+        "kind": "point2d",
+        "seed": [
+          0,
+          10
+        ]
+      },
+      {
+        "id": "same",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "diag",
+        "kind": "point2d",
+        "seed": [
+          10,
+          10
+        ]
+      },
+      {
+        "id": "h",
+        "kind": "line_segment2d",
+        "start": "a",
+        "end": "b"
+      },
+      {
+        "id": "h2",
+        "kind": "line_segment2d",
+        "start": "c",
+        "end": "d"
+      },
+      {
+        "id": "v",
+        "kind": "line_segment2d",
+        "start": "a",
+        "end": "e"
+      },
+      {
+        "id": "diagonal",
+        "kind": "line_segment2d",
+        "start": "a",
+        "end": "diag"
+      }
+    ],
+    "constraints": [
+      {
+        "id": "fa",
+        "type": "point_fixed2d",
+        "point": "a",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "fb",
+        "type": "point_fixed2d",
+        "point": "b",
+        "at": [
+          10,
+          0
+        ]
+      },
+      {
+        "id": "fc",
+        "type": "point_fixed2d",
+        "point": "c",
+        "at": [
+          0,
+          5
+        ]
+      },
+      {
+        "id": "fd",
+        "type": "point_fixed2d",
+        "point": "d",
+        "at": [
+          10,
+          5
+        ]
+      },
+      {
+        "id": "fe",
+        "type": "point_fixed2d",
+        "point": "e",
+        "at": [
+          0,
+          10
+        ]
+      },
+      {
+        "id": "fsame",
+        "type": "point_fixed2d",
+        "point": "same",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "fdiag",
+        "type": "point_fixed2d",
+        "point": "diag",
+        "at": [
+          10,
+          10
+        ]
+      },
+      {
+        "id": "co",
+        "type": "coincident",
+        "a": "a",
+        "b": "same"
+      },
+      {
+        "id": "parallel",
+        "type": "parallel",
+        "a": "h",
+        "b": "h2"
+      },
+      {
+        "id": "perpendicular",
+        "type": "perpendicular",
+        "a": "h",
+        "b": "v"
+      },
+      {
+        "id": "equal_length",
+        "type": "equal_length",
+        "a": "h",
+        "b": "v"
+      },
+      {
+        "id": "point_distance",
+        "type": "point_line_distance",
+        "point": "c",
+        "line": "h",
+        "dimension": "distance",
+        "side": "left"
+      },
+      {
+        "id": "angle",
+        "type": "angle",
+        "a": "h",
+        "b": "diagonal",
+        "dimension": "angle",
+        "directed": true
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

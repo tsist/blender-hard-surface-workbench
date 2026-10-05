@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0",
+  "command": "hardsurface.run",
+  "params": {
+    "manifest_version": "1.0",
+    "request_id": "integration-box-cut-bevel-002",
+    "purpose": "contract_fixture",
+    "source": {
+      "kind": "new_scene",
+      "project_id": "contract_fixture",
+      "length_unit": "mm",
+      "up_axis": "Z"
+    },
+    "context": {
+      "scene": "Fixture",
+      "view_layer": "ViewLayer",
+      "frame": 1,
+      "evaluation": "RENDER"
+    },
+    "resources": [],
+    "design": {
+      "mode": "create_if_absent",
+      "expected_state": "absent",
+      "state": {
+        "revision": 1,
+        "dimensions": [],
+        "sketches": [],
+        "features": [
+          {
+            "id": "block",
+            "program": {
+              "kind": "steps",
+              "steps": [
+                {
+                  "id": "body",
+                  "op": "primitive.box",
+                  "size": [
+                    80,
+                    50,
+                    5
+                  ]
+                },
+                {
+                  "id": "cutter",
+                  "op": "primitive.box",
+                  "size": [
+                    10,
+                    12,
+                    8
+                  ],
+                  "center": [
+                    20,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "id": "cut",
+                  "op": "boolean.apply_or_stack",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "body",
+                    "port": "body_object"
+                  },
+                  "cutter": {
+                    "kind": "step_output",
+                    "step_id": "cutter",
+                    "port": "body_object"
+                  },
+                  "operation": "DIFFERENCE",
+                  "solver": "EXACT"
+                },
+                {
+                  "id": "round",
+                  "op": "edge.bevel",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "cut",
+                    "port": "body_object"
+                  },
+                  "width": 0.5,
+                  "segments": 3
+                },
+                {
+                  "id": "normal",
+                  "op": "normal.finish",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "round",
+                    "port": "body_object"
+                  },
+                  "method": "smooth_by_angle",
+                  "angle": 30
+                },
+                {
+                  "id": "safe",
+                  "op": "checkpoint",
+                  "depends_on": [
+                    "normal"
+                  ]
+                },
+                {
+                  "id": "measure",
+                  "op": "measure",
+                  "target": {
+                    "kind": "step_output",
+                    "step_id": "normal",
+                    "port": "body_object"
+                  },
+                  "checks": [
+                    "closed_mesh",
+                    "bounds",
+                    "volume"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "protection": {
+      "source_write": "forbidden",
+      "shared_data": "reject_shared",
+      "manual_edits": "preserve_supported_nonconflicting",
+      "on_conflict": "pause"
+    },
+    "work_units": [
+      {
+        "id": "build",
+        "feature_ids": [
+          "block"
+        ],
+        "checks": [
+          "design_dimensions",
+          "closed_mesh",
+          "source_preserved",
+          "reopen"
+        ],
+        "failure_policy": "stop_job"
+      }
+    ],
+    "quality": {
+      "profile": "static_closed_mechanical_fixture",
+      "required": [
+        "design_dimensions",
+        "closed_mesh",
+        "normals",
+        "preservation",
+        "reopen",
+        "dependencies"
+      ],
+      "visual": "not_applicable_fixture_only",
+      "user_feedback": "not_applicable_fixture_only"
+    },
+    "budgets": {
+      "max_total_steps": 32,
+      "max_geometry_vertices": 200000,
+      "max_geometry_loops": 1000000,
+      "wall_seconds": 180,
+      "cpu_threads": 2
+    },
+    "output": {
+      "publication": "candidate_only",
+      "report": "compact"
+    },
+    "preview": {
+      "engine": "CYCLES",
+      "device": "CPU",
+      "width": 256,
+      "height": 256,
+      "samples": 8,
+      "views": [
+        "three_quarter",
+        "front"
+      ]
+    },
+    "wire": {
+      "enabled": false
+    }
+  }
+}

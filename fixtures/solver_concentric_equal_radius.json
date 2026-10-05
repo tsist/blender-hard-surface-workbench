@@ -1,0 +1,91 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "r": 0.005
+  },
+  "sketch": {
+    "id": "concentric_equal_radius",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "a",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b",
+        "kind": "point2d",
+        "seed": [
+          0.1,
+          0.1
+        ]
+      },
+      {
+        "id": "ca",
+        "kind": "circle2d",
+        "center": "a",
+        "radius_seed": 5
+      },
+      {
+        "id": "cb",
+        "kind": "circle2d",
+        "center": "b",
+        "radius_seed": 4.8
+      }
+    ],
+    "constraints": [
+      {
+        "id": "fix",
+        "type": "point_fixed2d",
+        "point": "a",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "conc",
+        "type": "concentric",
+        "a": "ca",
+        "b": "cb"
+      },
+      {
+        "id": "eq",
+        "type": "equal_radius",
+        "a": "ca",
+        "b": "cb"
+      },
+      {
+        "id": "r",
+        "type": "radius",
+        "circle": "ca",
+        "dimension": "r"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

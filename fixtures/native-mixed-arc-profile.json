@@ -1,0 +1,241 @@
+{
+  "schema_version": "1.0",
+  "command": "hardsurface.run",
+  "params": {
+    "manifest_version": "1.0",
+    "request_id": "native-mixed-arc-profile",
+    "purpose": "contract_fixture",
+    "source": {
+      "kind": "new_scene",
+      "project_id": "native_mixed_arc_fixture",
+      "length_unit": "mm",
+      "up_axis": "Z"
+    },
+    "context": {
+      "scene": "Fixture",
+      "view_layer": "ViewLayer",
+      "frame": 1,
+      "evaluation": "RENDER"
+    },
+    "resources": [],
+    "design": {
+      "mode": "create_if_absent",
+      "expected_state": "absent",
+      "state": {
+        "revision": 1,
+        "dimensions": [
+          {
+            "id": "radius",
+            "role": "driving",
+            "quantity": "length",
+            "value": 0.005,
+            "unit": "m"
+          },
+          {
+            "id": "start",
+            "role": "driving",
+            "quantity": "angle",
+            "value": 0,
+            "unit": "rad"
+          },
+          {
+            "id": "sweep",
+            "role": "driving",
+            "quantity": "angle",
+            "value": 3.141592653589793,
+            "unit": "rad"
+          }
+        ],
+        "sketches": [
+          {
+            "id": "mixed_arc_profile",
+            "workplane": {
+              "kind": "datum",
+              "id": "world_xy"
+            },
+            "entities": [
+              {
+                "id": "c",
+                "kind": "point2d",
+                "seed": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id": "p0",
+                "kind": "point2d",
+                "seed": [
+                  5,
+                  0.1
+                ]
+              },
+              {
+                "id": "p1",
+                "kind": "point2d",
+                "seed": [
+                  -5,
+                  0.1
+                ]
+              },
+              {
+                "id": "a",
+                "kind": "arc2d",
+                "center": "c",
+                "radius_seed": 4.8,
+                "start_angle_seed": 2,
+                "sweep_seed": 175
+              },
+              {
+                "id": "baseline",
+                "kind": "line_segment2d",
+                "start": "p1",
+                "end": "p0"
+              }
+            ],
+            "constraints": [
+              {
+                "id": "cfix",
+                "type": "point_fixed2d",
+                "point": "c",
+                "at": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "id": "r",
+                "type": "radius",
+                "circle": "a",
+                "dimension": "radius"
+              },
+              {
+                "id": "start",
+                "type": "arc_start_angle",
+                "arc": "a",
+                "dimension": "start"
+              },
+              {
+                "id": "sweep",
+                "type": "arc_sweep",
+                "arc": "a",
+                "dimension": "sweep"
+              },
+              {
+                "id": "join_start",
+                "type": "arc_endpoint_coincident",
+                "arc": "a",
+                "endpoint": "start",
+                "point": "p0"
+              },
+              {
+                "id": "join_end",
+                "type": "arc_endpoint_coincident",
+                "arc": "a",
+                "endpoint": "end",
+                "point": "p1"
+              }
+            ],
+            "profiles": [
+              {
+                "id": "semidisk",
+                "outer": [
+                  "a",
+                  "baseline"
+                ],
+                "holes": []
+              }
+            ],
+            "solve": {
+              "underconstrained": "reject",
+              "redundant_solved": "report_and_verify",
+              "branch_policy": "preserve_declared",
+              "max_attempts": 1,
+              "allowed_strategies": [
+                "declared_seed"
+              ],
+              "verification": {
+                "length_tolerance_mm": 0.001,
+                "angle_tolerance_deg": 0.001
+              },
+              "diagnostics": {
+                "when": "failure_or_redundancy",
+                "max_seconds": 5
+              }
+            }
+          }
+        ],
+        "features": [
+          {
+            "id": "arcbody",
+            "program": {
+              "kind": "recipe",
+              "recipe_id": "profile_extrude_edge_finish",
+              "recipe_version": "1.0.0",
+              "parameters": {
+                "depth": 3,
+                "bevel_width": 0.05
+              },
+              "inputs": {
+                "profile": {
+                  "kind": "sketch_profile",
+                  "sketch_id": "mixed_arc_profile",
+                  "profile_id": "semidisk"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "protection": {
+      "source_write": "forbidden",
+      "shared_data": "reject_shared",
+      "manual_edits": "preserve_supported_nonconflicting",
+      "on_conflict": "pause"
+    },
+    "work_units": [
+      {
+        "id": "build",
+        "feature_ids": [
+          "arcbody"
+        ],
+        "checks": [
+          "design_dimensions",
+          "closed_mesh",
+          "source_preserved",
+          "reopen"
+        ],
+        "failure_policy": "stop_job"
+      }
+    ],
+    "quality": {
+      "profile": "static_closed_mechanical_fixture",
+      "required": [
+        "constraint_residuals",
+        "profile_validity",
+        "design_dimensions",
+        "closed_mesh",
+        "preservation",
+        "reopen",
+        "dependencies"
+      ],
+      "visual": "not_applicable_fixture_only",
+      "user_feedback": "not_applicable_fixture_only"
+    },
+    "budgets": {
+      "max_total_steps": 32,
+      "max_geometry_vertices": 200000,
+      "max_geometry_loops": 1000000,
+      "wall_seconds": 180,
+      "cpu_threads": 2
+    },
+    "output": {
+      "publication": "candidate_only",
+      "report": "compact"
+    },
+    "wire": {
+      "enabled": false
+    }
+  }
+}

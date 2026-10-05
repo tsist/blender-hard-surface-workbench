@@ -1,0 +1,133 @@
+{
+  "evidence_kind": "authored_contract_fixture_not_production",
+  "expected_status": "verified_solved",
+  "dimension_values": {
+    "ra": 0.005,
+    "rb": 0.002,
+    "sa": -1.5707963267948966,
+    "sb": 1.5707963267948966,
+    "sweep": 3.141592653589793
+  },
+  "sketch": {
+    "id": "tangent_arc_arc",
+    "workplane": {
+      "kind": "datum",
+      "id": "world_xy"
+    },
+    "entities": [
+      {
+        "id": "ca",
+        "kind": "point2d",
+        "seed": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "cb",
+        "kind": "point2d",
+        "seed": [
+          7,
+          0
+        ]
+      },
+      {
+        "id": "a",
+        "kind": "arc2d",
+        "center": "ca",
+        "radius_seed": 5,
+        "start_angle_seed": -90,
+        "sweep_seed": 180
+      },
+      {
+        "id": "b",
+        "kind": "arc2d",
+        "center": "cb",
+        "radius_seed": 2,
+        "start_angle_seed": 90,
+        "sweep_seed": 180
+      }
+    ],
+    "constraints": [
+      {
+        "id": "fixa",
+        "type": "point_fixed2d",
+        "point": "ca",
+        "at": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "fixb",
+        "type": "point_fixed2d",
+        "point": "cb",
+        "at": [
+          7,
+          0
+        ]
+      },
+      {
+        "id": "ra",
+        "type": "radius",
+        "circle": "a",
+        "dimension": "ra"
+      },
+      {
+        "id": "sa",
+        "type": "arc_start_angle",
+        "arc": "a",
+        "dimension": "sa"
+      },
+      {
+        "id": "wa",
+        "type": "arc_sweep",
+        "arc": "a",
+        "dimension": "sweep"
+      },
+      {
+        "id": "rb",
+        "type": "radius",
+        "circle": "b",
+        "dimension": "rb"
+      },
+      {
+        "id": "sb",
+        "type": "arc_start_angle",
+        "arc": "b",
+        "dimension": "sb"
+      },
+      {
+        "id": "wb",
+        "type": "arc_sweep",
+        "arc": "b",
+        "dimension": "sweep"
+      },
+      {
+        "id": "t",
+        "type": "tangent_arc_arc",
+        "a": "a",
+        "b": "b",
+        "branch": "external"
+      }
+    ],
+    "profiles": [],
+    "solve": {
+      "underconstrained": "reject",
+      "redundant_solved": "report_and_verify",
+      "branch_policy": "preserve_declared",
+      "max_attempts": 1,
+      "allowed_strategies": [
+        "declared_seed"
+      ],
+      "verification": {
+        "length_tolerance_mm": 0.001,
+        "angle_tolerance_deg": 0.001
+      },
+      "diagnostics": {
+        "when": "failure_or_redundancy",
+        "max_seconds": 5
+      }
+    }
+  }
+}

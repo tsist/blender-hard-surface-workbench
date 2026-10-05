@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "angle": {
+      "default": 360.0,
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "dimension_ref"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "axis": {
+      "enum": [
+        "X",
+        "Y",
+        "Z"
+      ],
+      "type": "string"
+    },
+    "chord_tolerance": {
+      "default": 0.01,
+      "exclusiveMinimum": 0,
+      "type": "number"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "maxLength": 96,
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+        "type": "string"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "id": {
+      "maxLength": 96,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+      "type": "string"
+    },
+    "op": {
+      "const": "profile.revolve"
+    },
+    "profile": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "sketch_profile"
+            },
+            "profile_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "sketch_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "sketch_id",
+            "profile_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "step_output"
+            },
+            "port": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "step_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "step_id",
+            "port"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "feature_id": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "kind": {
+              "const": "feature_ref"
+            },
+            "port": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "feature_id",
+            "port"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "segments": {
+      "default": 64,
+      "maximum": 4096,
+      "minimum": 3,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "op",
+    "profile",
+    "axis"
+  ],
+  "title": "Hard Surface Workbench profile.revolve 1.0",
+  "type": "object"
+}
