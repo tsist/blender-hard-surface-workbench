@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - name: Install HOST schema-test dependency
+        run: python -m pip install --disable-pip-version-check 'jsonschema==4.26.0'
       - name: Host contracts and numerical fixtures
         run: python -B scripts/run_host_tests.py --shard-count 4 --shard-index ${{ matrix.shard }}
   public-source:
