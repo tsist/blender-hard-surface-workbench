@@ -1,0 +1,774 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hard Surface Workbench read-only subdivision diagnosis 1.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "command": {
+      "const": "hardsurface.subdivision.diagnose"
+    },
+    "params": {
+      "type": "object",
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "minLength": 1
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "maxLength": 4096,
+              "minLength": 1
+            },
+            "expected_sha256": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "file",
+            "expected_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "target": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "object_id": {
+                  "type": "string",
+                  "maxLength": 36,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                }
+              },
+              "required": [
+                "object_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "object_name": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "object_name"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "stack_mode": {
+          "const": "isolated_control_cage"
+        },
+        "export_geometry": {
+          "type": "boolean",
+          "default": false
+        },
+        "surface_export": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "HS_NATIVE_SURFACE_FIELDS_V1"
+            },
+            "binding_mode": {
+              "const": "source_bound_sparse_observation_v1"
+            },
+            "levels": {
+              "const": [
+                2,
+                3
+              ]
+            },
+            "expected_l2": {
+              "type": "object",
+              "properties": {
+                "positions_topology_sha256": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "native_normals_sharp_smooth_sha256": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "positions_topology_sha256",
+                "native_normals_sharp_smooth_sha256"
+              ],
+              "additionalProperties": false
+            },
+            "observation": {
+              "type": "object",
+              "properties": {
+                "report": {
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "maxLength": 4096,
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 8388608
+                    }
+                  },
+                  "required": [
+                    "file",
+                    "sha256",
+                    "bytes"
+                  ],
+                  "additionalProperties": false
+                },
+                "views": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "view": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 1
+                      },
+                      "image": {
+                        "type": "object",
+                        "properties": {
+                          "file": {
+                            "type": "string",
+                            "maxLength": 4096,
+                            "minLength": 1
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "maxLength": 64,
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2097152
+                          }
+                        },
+                        "required": [
+                          "file",
+                          "sha256",
+                          "bytes"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "projection_inputs": {
+                        "type": "object",
+                        "properties": {
+                          "pixel_aspect_x": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "maximum": 100
+                          },
+                          "pixel_aspect_y": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "maximum": 100
+                          },
+                          "resolution_percentage": {
+                            "const": 100
+                          },
+                          "shift_x": {
+                            "type": "number",
+                            "minimum": -10,
+                            "maximum": 10
+                          },
+                          "shift_y": {
+                            "type": "number",
+                            "minimum": -10,
+                            "maximum": 10
+                          }
+                        },
+                        "required": [
+                          "pixel_aspect_x",
+                          "pixel_aspect_y",
+                          "resolution_percentage",
+                          "shift_x",
+                          "shift_y"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "view",
+                      "image",
+                      "projection_inputs"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "report",
+                "views"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "format",
+            "levels",
+            "expected_l2",
+            "observation"
+          ],
+          "additionalProperties": false
+        },
+        "panel_reference": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "single_sharp_bore_rounded_panel",
+              "default": "single_sharp_bore_rounded_panel"
+            },
+            "coordinate_space": {
+              "const": "world",
+              "default": "world"
+            },
+            "length_unit": {
+              "const": "mm",
+              "default": "mm"
+            },
+            "size": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "center": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 100000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "corner_radius": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 100000
+            },
+            "edge_bevel": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 100000
+            },
+            "z_min": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "z_max": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "holes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "center": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -100000,
+                      "maximum": 100000
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "radius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 100000
+                  }
+                },
+                "required": [
+                  "center",
+                  "radius"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "tolerance_mm": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "size",
+            "center",
+            "corner_radius",
+            "edge_bevel",
+            "z_min",
+            "z_max",
+            "holes",
+            "tolerance_mm"
+          ],
+          "additionalProperties": false
+        },
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "contains": {
+            "const": 0
+          },
+          "minContains": 1,
+          "default": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "boundary_smooth": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "PRESERVE_CORNERS"
+              ],
+              "default": "ALL"
+            },
+            "uv_smooth": {
+              "type": "string",
+              "enum": [
+                "NONE",
+                "PRESERVE_CORNERS",
+                "PRESERVE_CORNERS_AND_JUNCTIONS",
+                "PRESERVE_CORNERS_JUNCTIONS_AND_CONCAVE",
+                "PRESERVE_BOUNDARIES",
+                "SMOOTH_ALL"
+              ],
+              "default": "PRESERVE_BOUNDARIES"
+            },
+            "quality": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6,
+              "default": 3
+            },
+            "use_limit_surface": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "evaluation_profile": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "const": "legacy_geometry_diagnostic_v0"
+                }
+              },
+              "required": [
+                "mode"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "const": "source_bound_qualification_v1"
+                },
+                "expected_source_modifier": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    },
+                    "subdivision_type": {
+                      "const": "CATMULL_CLARK"
+                    },
+                    "levels": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3
+                    },
+                    "render_levels": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3
+                    },
+                    "quality": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 6
+                    },
+                    "uv_smooth": {
+                      "type": "string",
+                      "enum": [
+                        "NONE",
+                        "PRESERVE_CORNERS",
+                        "PRESERVE_CORNERS_AND_JUNCTIONS",
+                        "PRESERVE_CORNERS_JUNCTIONS_AND_CONCAVE",
+                        "PRESERVE_BOUNDARIES",
+                        "SMOOTH_ALL"
+                      ],
+                      "default": "PRESERVE_BOUNDARIES"
+                    },
+                    "boundary_smooth": {
+                      "type": "string",
+                      "enum": [
+                        "ALL",
+                        "PRESERVE_CORNERS"
+                      ],
+                      "default": "ALL"
+                    },
+                    "use_creases": {
+                      "type": "boolean"
+                    },
+                    "use_limit_surface": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "const": "SUBSURF"
+                    },
+                    "use_custom_normals": {
+                      "type": "boolean"
+                    },
+                    "show_viewport": {
+                      "type": "boolean"
+                    },
+                    "show_render": {
+                      "type": "boolean"
+                    },
+                    "show_in_editmode": {
+                      "type": "boolean"
+                    },
+                    "show_on_cage": {
+                      "type": "boolean"
+                    },
+                    "show_only_control_edges": {
+                      "type": "boolean"
+                    },
+                    "use_apply_on_spline": {
+                      "type": "boolean"
+                    },
+                    "use_pin_to_last": {
+                      "type": "boolean"
+                    },
+                    "use_adaptive_subdivision": {
+                      "type": "boolean"
+                    },
+                    "adaptive_space": {
+                      "type": "string",
+                      "enum": [
+                        "PIXEL",
+                        "OBJECT"
+                      ]
+                    },
+                    "adaptive_pixel_size": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "adaptive_object_edge_length": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "subdivision_type",
+                    "levels",
+                    "render_levels",
+                    "quality",
+                    "uv_smooth",
+                    "boundary_smooth",
+                    "use_creases",
+                    "use_limit_surface",
+                    "type",
+                    "use_custom_normals",
+                    "show_viewport",
+                    "show_render",
+                    "show_in_editmode",
+                    "show_on_cage",
+                    "show_only_control_edges",
+                    "use_apply_on_spline",
+                    "use_pin_to_last"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "mode",
+                "expected_source_modifier"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "const": "source_bound_sparse_diagnostic_v1"
+                },
+                "expected_source_modifier": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "maxLength": 128,
+                      "minLength": 1
+                    },
+                    "subdivision_type": {
+                      "const": "CATMULL_CLARK"
+                    },
+                    "levels": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3
+                    },
+                    "render_levels": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3
+                    },
+                    "quality": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 6
+                    },
+                    "uv_smooth": {
+                      "type": "string",
+                      "enum": [
+                        "NONE",
+                        "PRESERVE_CORNERS",
+                        "PRESERVE_CORNERS_AND_JUNCTIONS",
+                        "PRESERVE_CORNERS_JUNCTIONS_AND_CONCAVE",
+                        "PRESERVE_BOUNDARIES",
+                        "SMOOTH_ALL"
+                      ],
+                      "default": "PRESERVE_BOUNDARIES"
+                    },
+                    "boundary_smooth": {
+                      "type": "string",
+                      "enum": [
+                        "ALL",
+                        "PRESERVE_CORNERS"
+                      ],
+                      "default": "ALL"
+                    },
+                    "use_creases": {
+                      "type": "boolean"
+                    },
+                    "use_limit_surface": {
+                      "type": "boolean"
+                    },
+                    "type": {
+                      "const": "SUBSURF"
+                    },
+                    "use_custom_normals": {
+                      "type": "boolean"
+                    },
+                    "show_viewport": {
+                      "type": "boolean"
+                    },
+                    "show_render": {
+                      "type": "boolean"
+                    },
+                    "show_in_editmode": {
+                      "type": "boolean"
+                    },
+                    "show_on_cage": {
+                      "type": "boolean"
+                    },
+                    "show_only_control_edges": {
+                      "type": "boolean"
+                    },
+                    "use_apply_on_spline": {
+                      "type": "boolean"
+                    },
+                    "use_pin_to_last": {
+                      "type": "boolean"
+                    },
+                    "use_adaptive_subdivision": {
+                      "type": "boolean"
+                    },
+                    "adaptive_space": {
+                      "type": "string",
+                      "enum": [
+                        "PIXEL",
+                        "OBJECT"
+                      ]
+                    },
+                    "adaptive_pixel_size": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "adaptive_object_edge_length": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "subdivision_type",
+                    "levels",
+                    "render_levels",
+                    "quality",
+                    "uv_smooth",
+                    "boundary_smooth",
+                    "use_creases",
+                    "use_limit_surface",
+                    "type",
+                    "use_custom_normals",
+                    "show_viewport",
+                    "show_render",
+                    "show_in_editmode",
+                    "show_on_cage",
+                    "show_only_control_edges",
+                    "use_apply_on_spline",
+                    "use_pin_to_last"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "mode",
+                "expected_source_modifier"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "default": {
+            "mode": "legacy_geometry_diagnostic_v0"
+          }
+        },
+        "render": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "front",
+                "back",
+                "top",
+                "bottom",
+                "side",
+                "three_quarter"
+              ],
+              "default": "three_quarter"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 2048,
+              "default": 512
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 2048,
+              "default": 512
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "default": {}
+        },
+        "max_evaluated_faces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 250000,
+          "default": 200000
+        },
+        "max_aggregate_faces": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500000,
+          "default": 400000
+        },
+        "cpu_threads": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4,
+          "default": 2
+        },
+        "wall_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600,
+          "default": 600
+        },
+        "max_tree_rss_bytes": {
+          "type": "integer",
+          "minimum": 1073741824,
+          "maximum": 3221225472
+        }
+      },
+      "required": [
+        "request_id",
+        "source",
+        "target",
+        "stack_mode"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "command",
+    "params"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "command": {
+      "const": "hardsurface.mesh.inspect"
+    },
+    "params": {
+      "additionalProperties": false,
+      "not": {
+        "required": [
+          "feature_ids",
+          "object_ids"
+        ]
+      },
+      "properties": {
+        "cpu_threads": {
+          "default": 2,
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "feature_ids": {
+          "items": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "max_tree_rss_bytes": {
+          "default": 1073741824,
+          "maximum": 4294967296,
+          "minimum": 1073741824,
+          "type": "integer"
+        },
+        "object_ids": {
+          "items": {
+            "maxLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "request_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "type": "string"
+        },
+        "self_intersections": {
+          "default": false,
+          "type": "boolean"
+        },
+        "source": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "expected_sha256": {
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "file": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "expected_sha256"
+          ],
+          "type": "object"
+        },
+        "views": {
+          "default": [
+            {
+              "direction": "three_quarter",
+              "name": "whole-three-quarter",
+              "region": "whole"
+            },
+            {
+              "direction": "bottom_three_quarter",
+              "name": "whole-bottom-three-quarter",
+              "region": "whole"
+            },
+            {
+              "direction": "top",
+              "name": "top-isolated",
+              "region": "top"
+            },
+            {
+              "direction": "bottom",
+              "name": "bottom-isolated",
+              "region": "bottom"
+            },
+            {
+              "direction": "three_quarter",
+              "name": "holewall-isolated",
+              "region": "holewall"
+            },
+            {
+              "direction": "three_quarter",
+              "name": "roundover-isolated",
+              "region": "outer_roundover"
+            },
+            {
+              "direction": "three_quarter",
+              "name": "side-isolated",
+              "region": "side"
+            }
+          ],
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "direction": {
+                "enum": [
+                  "three_quarter",
+                  "bottom_three_quarter",
+                  "top",
+                  "bottom",
+                  "front",
+                  "side"
+                ],
+                "type": "string"
+              },
+              "height": {
+                "default": 1200,
+                "maximum": 2000,
+                "minimum": 240,
+                "type": "integer"
+              },
+              "label_budget": {
+                "default": 160,
+                "maximum": 2000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "labels": {
+                "default": "both",
+                "enum": [
+                  "both",
+                  "edges",
+                  "faces",
+                  "none"
+                ],
+                "type": "string"
+              },
+              "name": {
+                "maxLength": 48,
+                "pattern": "^[a-z][a-z0-9-]{0,47}$",
+                "type": "string"
+              },
+              "region": {
+                "enum": [
+                  "whole",
+                  "top",
+                  "bottom",
+                  "holewall",
+                  "outer_roundover",
+                  "side"
+                ],
+                "type": "string"
+              },
+              "width": {
+                "default": 1600,
+                "maximum": 2000,
+                "minimum": 320,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "name",
+              "region",
+              "direction"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "type": "array"
+        },
+        "wall_seconds": {
+          "default": 300,
+          "exclusiveMinimum": 0,
+          "maximum": 600,
+          "type": "number"
+        }
+      },
+      "required": [
+        "request_id",
+        "source"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1.0"
+    }
+  },
+  "required": [
+    "schema_version",
+    "command",
+    "params"
+  ],
+  "title": "Hard Surface Workbench actual L0 source mesh inspection 1.0",
+  "type": "object"
+}

@@ -88,9 +88,16 @@ def caps(loops):
         corrected.append((a,b,c) if orient(pts[a],pts[b],pts[c])>0 else (c,b,a))
     return pts,corrected
 
-def new_mesh(name,verts,faces):
+def new_mesh(name,verts,faces,*,already_oriented=False):
     mesh=bpy.data.meshes.new(name+'.mesh'); mesh.from_pydata(verts,[],faces);mesh.update(calc_edges=True)
-    bm=bmesh.new();bm.from_mesh(mesh);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(mesh);bm.free()
+    if already_oriented:
+        # Only the opt-in authored schedule path bypasses BMesh. Its constructor
+        # finished winding before materialization; prove full array transport
+        # before assigning semantic slots. Counts alone are never sufficient.
+        from ..structure_native import verify_materialization_order
+        verify_materialization_order(mesh,verts,faces)
+    else:
+        bm=bmesh.new();bm.from_mesh(mesh);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(mesh);bm.free()
     ob=bpy.data.objects.new(name,mesh);bpy.context.scene.collection.objects.link(ob);return ob
 
 def create_extrusion(name,loops,depth):

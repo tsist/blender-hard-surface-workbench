@@ -97,6 +97,8 @@ def _reference_gate(params,approval):
 
 def plan_request(request,saved_state=None,reference_approval=None):
     req=normalize_request(request); p=req['params']; gate=_reference_gate(p,reference_approval)
+    if 'reference_consistency' in p['quality']['required'] or any('reference_consistency' in unit['checks'] for unit in p['work_units']):
+        _error('CHECK_UNSUPPORTED','reference_consistency is external visual review, not an executable machine check; retain visual required and the approved reference checklist')
     state=resolve_design(p['design'],saved_state); scale=LENGTH_SCALES[p['source']['length_unit']]
     dimensions={d['id']:d for d in state['dimensions']}; sketches={s['id']:s for s in state['sketches']}; features={f['id']:f for f in state['features']}
     feature_units={}; units={u['id']:u for u in p['work_units']}
@@ -286,7 +288,7 @@ CHECK_PRODUCERS = {
     'constraint_residuals':'solver', 'profile_validity':'solver',
     'design_dimensions':'core','closed_mesh':'core','normals':'core','volume':'core',
     'preservation':'core','source_preserved':'host','reopen':'host','dependencies':'host',
-    'reference_consistency':'external_visual','quad_topology':'core',
+    'reference_consistency':'external_visual','quad_topology':'core','structure_identity':'core',
 }
 
 def required_checks(params,state,steps):
@@ -296,8 +298,33 @@ def required_checks(params,state,steps):
     closed when a scoped result is absent or not_run.
     """
     declared=set(params['quality']['required'])
+    stage=params['quality'].get('stage','full')
+    if stage=='source_cage':
+        geometry=[s.get('effective_params',s) for s in steps if s['op'] not in ('checkpoint','measure')]
+        if not geometry or any(s.get('op')!='quad.panel' or s.get('topology_strategy')!='sparse_control_cage' or s.get('sparse_cage',{}).get('preview_levels',0)!=0 for s in geometry):
+            _error('SOURCE_STAGE_UNSUPPORTED','Source-cage stage requires only the new sparse route with actual SubD level zero')
+        requested=declared|{c for u in params['work_units'] for c in u['checks']}
+        if requested.intersection({'design_dimensions','reference_consistency'}):
+            _error('SOURCE_STAGE_SCOPE','Source review cannot satisfy evaluated design or visual reference acceptance')
+        if params.get('preview') or params.get('wire',{}).get('enabled',True):
+            _error('SOURCE_STAGE_SCOPE','Source review uses actual-data mesh inspection; disable rendered wire and omit preview')
+    for s in steps:
+        effective=s.get('effective_params',s)
+        if effective.get('topology_strategy')=='sparse_control_cage' and 'subdivision_cage' in effective:
+            _error('SPARSE_MIGRATION_REQUIRED','Legacy subdivision_cage configuration cannot silently migrate to sparse_cage')
+        if 'sparse_cage' in effective and effective.get('topology_strategy')!='sparse_control_cage':
+            _error('SPARSE_CONFIGURATION_SCOPE','sparse_cage belongs only to the explicit sparse_control_cage route')
+        if effective.get('topology_strategy')=='sparse_control_cage' and stage!='source_cage':
+            _error('SPARSE_FULL_QUALIFICATION_PENDING','This source-review candidate does not yet implement the new sparse evaluated-shape acceptance path')
+
     if params['purpose']=='production' or any(s['op'].startswith('quad.') for s in steps):
         declared.add('quad_topology')
+    structural_steps=[s for s in steps if s.get('op')=='quad.panel' and s.get('effective_params',s).get('topology_strategy') in ('subd_control_cage','sparse_control_cage')]
+    if structural_steps:declared.add('structure_identity')
+    for s in steps:
+        effective=s.get('effective_params',s)
+        if effective.get('edit_datum','not_requested')!='not_requested' and (effective.get('op')!='quad.panel' or effective.get('topology_strategy') not in ('subd_control_cage','sparse_control_cage')):
+            _error('STRUCTURE_EDIT_UNSUPPORTED','An explicit edit datum belongs only to the authored SubD panel domain')
     by_unit={}
     for unit in params['work_units']:
         for check in unit['checks']:
@@ -309,12 +336,13 @@ def required_checks(params,state,steps):
         producer=CHECK_PRODUCERS.get(check)
         if producer is None: _error('CHECK_UNSUPPORTED','Required check has no registered evidence producer',check=check)
         applicable=True; reason=None
+        if check=='structure_identity' and not structural_steps:_error('CHECK_NOT_APPLICABLE','Structure identity requires an authored SubD panel work unit',check=check)
         if check=='reference_consistency' and params['purpose']=='contract_fixture': _error('CHECK_UNSUPPORTED','Fixture cannot establish production reference consistency',check=check)
         if check=='constraint_residuals' and not state['sketches']: _error('CHECK_NOT_APPLICABLE','Required constraint check has no sketch scope',check=check)
         if check=='profile_validity' and not profiles: _error('CHECK_NOT_APPLICABLE','Required profile validity has no consumed profile scope',check=check)
         if check in ('design_dimensions','closed_mesh','normals','volume') and not geometry and not any(s['op']=='measure' for s in steps): _error('CHECK_NOT_APPLICABLE','Required geometry check has no geometry or measure scope',check=check)
         if check=='source_preserved' and params['source']['kind']=='new_scene': applicable=False; reason='Explicit new_scene has no original source file; resources remain independently protected.'
-        scope=profiles if check=='profile_validity' else geometry if check in ('design_dimensions','closed_mesh','normals','volume') else steps
+        scope=structural_steps if check=='structure_identity' else profiles if check=='profile_validity' else geometry if check in ('design_dimensions','closed_mesh','normals','volume') else steps
         result.append({'id':check,'producer':producer,'applicable':applicable,'reason':reason,'unit_ids':sorted(by_unit.get(check,[])),'step_keys':[s['step_key'] for s in scope],'scope':'Executed feature parameters and evaluated geometry; not manufacturing certification.' if check=='design_dimensions' else 'Declared work-unit targets and consumed dependencies.'})
     return result
 

@@ -1,0 +1,89 @@
+{
+  "fixture_kind": "public_numeric_host_baseline_no_private_design",
+  "baseline_source_tree_sha256": "9017d1abbb31d4a5e526b33875558505c315846026e92c2a8229efbb7575ba0e",
+  "feature_id": "test-feature",
+  "canonicalization": "json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False).encode_utf8 then SHA256",
+  "scope": "Full legacy return record; no native or visual qualification",
+  "cases": [
+    {
+      "case": "neutral",
+      "legacy_keys": [
+        "construction_sha256",
+        "control_loops",
+        "edge_creases",
+        "face_provenance",
+        "faces",
+        "metadata",
+        "sharp_edges",
+        "subdivision_modifier",
+        "vertices_mm"
+      ],
+      "legacy_complete_canonical_sha256": "509ba34e052a82f8ca025fb5e8a7b1b85461c6326dcdbfe104ccddd124c547c1",
+      "construction_sha256": "e8baa0190af331ca1f549172072c9cdae7add9f6a321febc723c85281b13371e"
+    },
+    {
+      "case": "hole_move",
+      "legacy_keys": [
+        "construction_sha256",
+        "control_loops",
+        "edge_creases",
+        "face_provenance",
+        "faces",
+        "metadata",
+        "sharp_edges",
+        "subdivision_modifier",
+        "vertices_mm"
+      ],
+      "legacy_complete_canonical_sha256": "4ebda1a7ae4c8b612cdcd3cb87ef8f9a9794b85b3af7b802dcb6f7eac8e5cc41",
+      "construction_sha256": "8c1818115ee16c80dbe8a092d4dfd3a725db817344aab2ee09bb2c54eab7605c"
+    },
+    {
+      "case": "thickness",
+      "legacy_keys": [
+        "construction_sha256",
+        "control_loops",
+        "edge_creases",
+        "face_provenance",
+        "faces",
+        "metadata",
+        "sharp_edges",
+        "subdivision_modifier",
+        "vertices_mm"
+      ],
+      "legacy_complete_canonical_sha256": "8bd54e4c1af6ec2f0e756c7b64ab91f71bef5d88ad2c7206519bb76783dddf12",
+      "construction_sha256": "babc73c1c53f1eb443ae0192390d212cf9c55f295c405affc722ee497ead90bf"
+    },
+    {
+      "case": "translated",
+      "legacy_keys": [
+        "construction_sha256",
+        "control_loops",
+        "edge_creases",
+        "face_provenance",
+        "faces",
+        "metadata",
+        "sharp_edges",
+        "subdivision_modifier",
+        "vertices_mm"
+      ],
+      "legacy_complete_canonical_sha256": "e7ad8ba23476967b92f2b6a3009260c51cc4de49bde345dd028f5085d556956e",
+      "construction_sha256": "31ae988a166e37b4f18e0624ea6da273f096f031bec68592970279427069f2fa"
+    },
+    {
+      "case": "alternate",
+      "legacy_keys": [
+        "construction_sha256",
+        "control_loops",
+        "edge_creases",
+        "face_provenance",
+        "faces",
+        "metadata",
+        "sharp_edges",
+        "subdivision_modifier",
+        "vertices_mm"
+      ],
+      "legacy_complete_canonical_sha256": "145d2644100aaa3c2b6073fc58c624d05b2f602b545641bb66c916e6cec2e02d",
+      "construction_sha256": "9fc6edf34dae162dbc3e86e5ca2838f7a49c42feb01ed847e86a23141ce06b8b"
+    }
+  ]
+}

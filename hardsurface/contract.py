@@ -150,9 +150,14 @@ OPERATIONS.update({
     'quad.panel':operation('quad.panel',{
         'size':array(POS_LENGTH,2,2),'center':optional_default(array(LENGTH,2,2),[0,0]),
         'corner_radius':POS_LENGTH,'z_min':LENGTH,'z_max':LENGTH,
+        'topology_strategy':optional_default(enum('tiled','sparse_annulus','local_patch_blocks','subd_control_cage','sparse_control_cage',description='Legacy routes remain explicit compatibility paths. sparse_annulus target_edge_length controls straight-outline and wall-height sampling; radial spans use bounded minimal angle/aspect-qualified layouts. local_patch_blocks keeps its explicit fixed local_patch_bounds frame. sparse_control_cage is the versioned low-density single-hole closed-body route; source-cage review is separate from evaluated shape qualification.'),'tiled'),
+        'edit_datum':enum('not_requested','fixed_bottom','fixed_midplane',description='Explicit semantic-rebuild thickness datum. Omitted means no thickness edit; this field never authorizes changing approved design.'),
+        'subdivision_cage':obj({'method':optional_default(enum('CATMULL_CLARK'),'CATMULL_CLARK'),'hole_segments':optional_default(integer(minimum=24,maximum=24),24),'preview_levels':optional_default(integer(minimum=0,maximum=3),2),'bore_support_width':number(exclusiveMinimum=0),'outer_join_policy':enum('joined_arc_v1','joined_arc_v2')},[]),
+        'sparse_cage':obj({'hole_segments':integer(minimum=4,maximum=128),'outer_segments':integer(minimum=8,maximum=256),'hole_planar_support':BOOL,'profile_arc_segments':integer(minimum=2,maximum=8),'hole_cage_radius_factor':number(exclusiveMinimum=0),'outer_support_fraction':number(exclusiveMinimum=0,exclusiveMaximum=1),'wall_support_fraction':number(exclusiveMinimum=0,exclusiveMaximum=1),'collar_radius_factor':number(exclusiveMinimum=1),'layout':obj({'schema':enum('fixed-frame-axis-aligned/1.0','fixed-frame-axis-aligned/1.1'),'feature_frame_mm':array(number(),4,4,description='Frozen local-mm collar frame [xmin,ymin,xmax,ymax]; hole edits do not move this frame or the macrogrid.'),'corner_guard_mm':number(exclusiveMinimum=0,description='Frozen spacing from core corner to the adjacent macrogrid guard slot.')}),'preview_levels':integer(minimum=0,maximum=3),'insertion_policy':enum('axis_plane_v1',description='Explicit bounded whole-body axis-plane insertion policy; requires a frozen fixed-frame layout and allows at most two append-only insertion declarations.'),'insertions':array(obj({'corridor':enum('east','south'),'fraction':number(minimum=.2,maximum=.8)}),0,2)},[]),
+        'local_patch_bounds':array(LENGTH,4,4,description='Fixed caller-owned [xmin,ymin,xmax,ymax] in mm, required by local_patch_blocks; preserve across hole-position edits.'),
         'holes':optional_default(array(QUAD_HOLE,0,32),[]),
         'lips':optional_default(array(QUAD_LIP,0,16),[]),
-        'edge_bevel':optional_default(number(minimum=0,maximum=1),0.0),**QUAD_SAMPLING,
+        'edge_bevel':optional_default(union(number(minimum=0,maximum=2),DIMREF),0.0),**QUAD_SAMPLING,
     },['size','corner_radius','z_min','z_max'],topology=True),
     'quad.shell':operation('quad.shell',{
         'size':array(POS_LENGTH,3,3),'center':optional_default(array(LENGTH,2,2),[0,0]),
@@ -169,6 +174,48 @@ OPERATIONS.update({
         'socket_depth':optional_default(number(minimum=0),0.0),**QUAD_SAMPLING,
     },['center','shaft_radius','head_radius','head_height','shaft_length','shoulder_z','direction'],topology=True),
 })
+_subd_cfg=OPERATIONS['quad.panel']['schema']['properties']['subdivision_cage']
+_subd_cfg['if']={'required':['outer_join_policy']}
+_subd_cfg['then']={'required':['bore_support_width']}
+
+# Opt-in only: an absent insertion policy retains the one-insertion legacy
+# envelope. Exported schemas and runtime validation use this same conditional.
+_sparse_cfg=OPERATIONS['quad.panel']['schema']['properties']['sparse_cage']
+_sparse_cfg['properties']['corner_columns']=obj({
+    'schema':const('corner-columns-midpoint/1.0'),
+},description='Explicit midpoint corner-column constructor; requires a fixed-frame layout and axis_plane_v1. No fitting or optimization controls are accepted.')
+_sparse_cfg['if']={'properties':{'insertion_policy':const('axis_plane_v1')},'required':['insertion_policy']}
+_sparse_cfg['then']={'required':['layout']}
+_sparse_cfg['else']={'properties':{'insertions':array(obj({'corridor':enum('east','south'),'fraction':number(minimum=.2,maximum=.8)}),0,1)}}
+_sparse_cfg['allOf']=[{
+    'if':{'required':['corner_columns']},
+    'then':{'required':['layout','insertion_policy'],'properties':{
+        'profile_arc_segments':integer(minimum=4,maximum=4),
+    }},
+}]
+
+# Conditional field requirement is part of the exported schema and runtime
+# contract; legacy panel modes retain their prior required fields.
+OPERATIONS['quad.panel']['schema']['if']={'properties':{'topology_strategy':enum('local_patch_blocks','subd_control_cage')},'required':['topology_strategy']}
+OPERATIONS['quad.panel']['schema']['then']={'required':['local_patch_bounds']}
+# Property constraints are a second bounded conditional; non-SubD routes retain
+# the previous <=1 mm envelope and cannot accept the new independent bore band.
+OPERATIONS['quad.panel']['schema']['allOf']=[{
+    'if':{'properties':{'topology_strategy':enum('subd_control_cage','sparse_control_cage')},'required':['topology_strategy']},
+    'then':{'properties':{'edge_bevel':union(number(minimum=0,maximum=2),DIMREF)}},
+    'else':{'properties':{
+        'edge_bevel':union(number(minimum=0,maximum=1),DIMREF),
+        'subdivision_cage':obj({'method':optional_default(enum('CATMULL_CLARK'),'CATMULL_CLARK'),'hole_segments':optional_default(integer(minimum=24,maximum=24),24),'preview_levels':optional_default(integer(minimum=0,maximum=3),2)},[]),
+    }},
+}, {
+    'if':{'required':['sparse_cage'],'properties':{
+        'sparse_cage':{'required':['corner_columns']},
+    }},
+    'then':{'required':['topology_strategy'],'properties':{
+        'topology_strategy':const('sparse_control_cage'),
+    }},
+}]
+
 STEP = union(*(v['schema'] for v in OPERATIONS.values()))
 RECIPE_PARAMETERS = union(
     obj({'depth':POS_LENGTH,'bevel_width':POS_LENGTH,'editable':optional_default(BOOL,True)},['depth','bevel_width']),
@@ -188,6 +235,7 @@ PATCH = union(
     obj({'op':const('replace_constraint'),'sketch_id':IDENT,'constraint':CONSTRAINT}),
     obj({'op':const('add_entity'),'sketch_id':IDENT,'entity':ENTITY}),
     obj({'op':const('add_feature'),'feature':FEATURE}),
+    obj({'op':const('insert_sparse_strip'),'feature_id':IDENT,'step_id':IDENT,'expected_feature_sha256':SHA,'corridor':enum('east','south'),'fraction':number(minimum=.2,maximum=.8)}),
     obj({'op':const('add_sketch'),'sketch':SKETCH}),
 )
 DESIGN = union(
@@ -197,7 +245,7 @@ DESIGN = union(
 )
 WIRE_STYLE = obj({'enabled':optional_default(BOOL,True),'mesh_state':optional_default(enum('control','evaluated'),'evaluated'),'line_width_px':optional_default(number(minimum=1,maximum=2),1.25),'max_edges':optional_default(integer(minimum=1,maximum=100000),100000)},[])
 RUN_WIRE = obj({**WIRE_STYLE['properties'],'component_views':optional_default(BOOL,True),'width':optional_default(integer(minimum=64,maximum=2048),480),'height':optional_default(integer(minimum=64,maximum=2048),360)},[])
-CHECKS = enum('constraint_residuals','profile_validity','design_dimensions','closed_mesh','source_preserved','reopen','preservation','dependencies','normals','volume','reference_consistency','quad_topology')
+CHECKS = enum('constraint_residuals','profile_validity','design_dimensions','closed_mesh','source_preserved','reopen','preservation','dependencies','normals','volume','reference_consistency','quad_topology','structure_identity')
 REQUEST = obj({'schema_version':const('1.0'),'command':const('hardsurface.run'),'params':obj({
     'manifest_version':const('1.0'),'request_id':string(minLength=1,maxLength=128,pattern=r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$'),'purpose':enum('contract_fixture','production'),
     'source':union(obj({'kind':const('new_scene'),'project_id':IDENT,'length_unit':enum(*LENGTH_SCALES),'up_axis':const('Z')}),obj({'kind':const('saved_blend'),'file':string(minLength=1),'expected_sha256':SHA,'bytes':integer(minimum=1),'length_unit':enum(*LENGTH_SCALES)})),
@@ -206,7 +254,7 @@ REQUEST = obj({'schema_version':const('1.0'),'command':const('hardsurface.run'),
     'design':DESIGN,
     'protection':obj({'source_write':const('forbidden'),'shared_data':enum('reject_shared','make_single_user'),'manual_edits':const('preserve_supported_nonconflicting'),'on_conflict':const('pause'),'non_target_object_ids':optional_default(array(UUID,0,128,uniqueItems=True),[])},['source_write','shared_data','manual_edits','on_conflict']),
     'work_units':array(obj({'id':IDENT,'feature_ids':array(IDENT,1,128,uniqueItems=True),'checks':array(CHECKS,1,16,uniqueItems=True),'failure_policy':enum('stop_job'),'depends_on':optional_default(array(IDENT,0,8,uniqueItems=True),[])},['id','feature_ids','checks','failure_policy']),1,8),
-    'quality':obj({'profile':IDENT,'required':array(CHECKS,1,16,uniqueItems=True),'visual':enum('not_applicable_fixture_only','required'),'user_feedback':enum('not_applicable_fixture_only','required','not_run'),'length_tolerance':optional_default(number(exclusiveMinimum=0),.01),'angle_tolerance_deg':optional_default(number(exclusiveMinimum=0,maximum=1),.001)},['profile','required','visual','user_feedback']),
+    'quality':obj({'profile':IDENT,'stage':enum('source_cage','full'),'required':array(CHECKS,1,16,uniqueItems=True),'visual':enum('not_applicable_fixture_only','required'),'user_feedback':enum('not_applicable_fixture_only','required','not_run'),'length_tolerance':optional_default(number(exclusiveMinimum=0),.01),'angle_tolerance_deg':optional_default(number(exclusiveMinimum=0,maximum=1),.001)},['profile','required','visual','user_feedback']),
     'budgets':obj({'max_total_steps':integer(minimum=1,maximum=128),'max_geometry_vertices':integer(minimum=8,maximum=2000000),'max_geometry_loops':integer(minimum=24,maximum=10000000),'wall_seconds':number(exclusiveMinimum=0,maximum=3600),'cpu_threads':integer(minimum=1,maximum=8),'max_instances':optional_default(integer(minimum=1,maximum=128),128),'max_total_attempts':optional_default(integer(minimum=1,maximum=96),32),'max_tessellation_vertices':optional_default(integer(minimum=8,maximum=200000),200000),'max_preview_samples':optional_default(integer(minimum=1,maximum=1000000000),100000000),'max_observed_rss_bytes':optional_default(integer(minimum=67108864),2147483648),'max_artifact_bytes':optional_default(integer(minimum=1048576),1073741824)},['max_total_steps','max_geometry_vertices','max_geometry_loops','wall_seconds','cpu_threads']),
     'output':obj({'publication':const('candidate_only'),'report':enum('compact','full'),'editability':optional_default(enum('preserve_modifiers','apply_declared'),'preserve_modifiers')},['publication','report']),
     'wire':optional_default(RUN_WIRE,{}),
@@ -269,6 +317,17 @@ def strict_loads(data):
     return value
 
 
+def _matches_condition(value,node):
+    """Match the registered bounded schema predicates, including nested presence."""
+    if 'const' in node and value!=node['const']:return False
+    if 'enum' in node and value not in node['enum']:return False
+    # JSON Schema required/properties predicates apply only to object values.
+    if not isinstance(value,dict):return True
+    return (all(k in value for k in node.get('required',())) and
+            all(k not in value or _matches_condition(value[k],spec)
+                for k,spec in node.get('properties',{}).items()))
+
+
 def _validate(value,node,path='$'):
     if 'oneOf' in node:
         # Fast discrimination and useful nested paths rather than hiding field errors.
@@ -295,6 +354,18 @@ def _validate(value,node,path='$'):
         if extra: _fail(f'Unknown fields: {sorted(extra)}',path)
         missing=set(node.get('required',()))-set(value)
         if missing: _fail(f'Missing fields: {sorted(missing)}',path)
+        # Registered if/then/else/allOf conditionals apply required fields and
+        # property subcontracts identically to the exported JSON Schema.
+        conditionals=([node] if 'if' in node else [])+node.get('allOf',[])
+        for conditional in conditionals:
+            condition=conditional.get('if')
+            if not isinstance(condition,dict):_fail('Invalid registered conditional',path,code='INTERNAL_ERROR')
+            matched=_matches_condition(value,condition)
+            branch=conditional.get('then' if matched else 'else',{})
+            conditional_missing=set(branch.get('required',()))-set(value)
+            if conditional_missing:_fail(f'Missing conditional fields: {sorted(conditional_missing)}',path)
+            for key,spec in branch.get('properties',{}).items():
+                if key in value:_validate(value[key],spec,path+'.'+key)
         result={}
         for key,spec in properties.items():
             if key in value: result[key]=_validate(value[key],spec,path+'.'+key)
@@ -500,6 +571,27 @@ def resolve_design(design_command,saved_state=None):
                 if idx is None: _fail('replace_constraint target does not exist')
                 sketch['constraints'][idx]=patch['constraint']
         elif op=='add_feature': state['features'].append(patch['feature'])
+        elif op=='insert_sparse_strip':
+            feature=next((f for f in state['features'] if f['id']==patch['feature_id']),None)
+            if feature is None or fingerprint(feature)!=patch['expected_feature_sha256']:
+                _fail('Sparse insertion feature identity is stale',code='REVISION_CONFLICT')
+            program=feature['program']
+            if program['kind']!='steps':_fail('Sparse insertion requires an explicit existing step program')
+            step=next((s for s in program['steps'] if s['id']==patch['step_id']),None)
+            if step is None or step.get('op')!='quad.panel' or step.get('topology_strategy')!='sparse_control_cage':
+                _fail('Sparse insertion cannot migrate a different constructor',code='SPARSE_MIGRATION_REQUIRED')
+            cfg=step.setdefault('sparse_cage',{})
+            previous=cfg.get('insertions',[])
+            declaration={'corridor':patch['corridor'],'fraction':patch['fraction']}
+            if cfg.get('insertion_policy')=='axis_plane_v1':
+                if len(previous)>=2:
+                    _fail('The axis-plane policy supports at most two append-only insertions',code='SPARSE_INSERTION_DOMAIN')
+                if declaration in previous:
+                    _fail('An axis-plane declaration cannot duplicate an existing insertion',code='SPARSE_INSERTION_DOMAIN')
+                cfg['insertions']=[*previous,declaration]
+            else:
+                if previous:_fail('Only one insertion from the base sparse schedule is supported',code='SPARSE_INSERTION_DOMAIN')
+                cfg['insertions']=[declaration]
         elif op=='add_sketch': state['sketches'].append(patch['sketch'])
     state['revision']+=1
     return validate_state(state)
@@ -566,6 +658,7 @@ REPORT = obj({
     'source_protection':obj({'original_source_observed':obj({'status':enum('observed','changed','unknown','not_applicable'),'written_by_this_tool':const(False),'continuous_immutability_proven':const(False)}),'staged_snapshot_guarded':GUARD_SUMMARY,'resources_guarded':GUARD_SUMMARY,'evidence':OUTPUT_FILE}),
     'checkpoints':array(obj({'checkpoint_id':IDENT,'state':const('accepted_checkpoint'),'receipt':OUTPUT_FILE}),0,16),
     'topology_diagnostics':obj({'status':enum('pass','disabled_by_request','failed','not_run'),'mesh_state':enum('control','evaluated'),'components':integer(minimum=0,maximum=128),'statistics':OUTPUT_FILE,'views':array(OUTPUT_FILE,0,16)},['status','mesh_state','components','views']),
+    'qualification_scope':obj({'stage':const('source_cage'),'source_structure':const('pass'),'evaluated_shape':const('not_run'),'surface_observation':const('not_run'),'production_qualification':const('not_run')}),
     'report':OUTPUT_FILE,'next_step':string(),'warnings':array(obj({'code':string(maxLength=128),'message':string()}),0,16),
     'details_omitted':BOOL,'details_reference':OUTPUT_FILE,
 },['report_version','job_id','request_id','status','domain_outcome','candidate','acceptance','counts','error','source_protection','checkpoints','report','next_step','warnings'])
@@ -575,15 +668,23 @@ def validate_report(report):
     result=_validate(report,REPORT,'$.report')
     _paths(result)
     if result['status']=='succeeded' and result['domain_outcome']=='failed': _fail('Succeeded receipt cannot claim failed domain',code='REPORT_INCONSISTENT')
-    if result['domain_outcome']=='pass':
+    if 'qualification_scope' in result:
+        if (result['status']!='succeeded' or result['domain_outcome']!='partial'
+                or result['candidate'] is None or result['candidate']['state']!='verified_candidate'
+                or result['acceptance']['performance']['status']!='pass'
+                or any(result['acceptance'][key]['status']=='pass' for key in ('visual','user_feedback','method_acceptance'))):
+            _fail('Source-cage receipts must remain partial verified candidates without visual, user or production qualification',code='REPORT_INCONSISTENT')
+    if result['domain_outcome']=='pass' or 'qualification_scope' in result:
         if result['status']!='succeeded' or result['candidate'] is None or result['error'] is not None: _fail('Passing report requires successful candidate and no error',code='REPORT_INCONSISTENT')
         for key in ('technical','preservation','dependency_reproduction'):
             if result['acceptance'][key]['status']!='pass': _fail('Passing report lacks required acceptance',code='REPORT_INCONSISTENT')
-    if result['domain_outcome']=='pass':
+    if result['domain_outcome']=='pass' or 'qualification_scope' in result:
         source=result['source_protection']
         if source['original_source_observed']['status'] not in ('observed','not_applicable'): _fail('Passing report has unknown or changed original source',code='REPORT_INCONSISTENT')
         for key in ('staged_snapshot_guarded','resources_guarded'):
             if source[key]['status'] not in ('pass','not_applicable'): _fail('Passing report has unaccepted source/resource guard',code='REPORT_INCONSISTENT')
+            if 'qualification_scope' in result and source[key]['accepted'] is not True:
+                _fail('Source-cage scope requires explicitly accepted guards',code='REPORT_INCONSISTENT')
     for key,entry in result['acceptance'].items():
         if entry['status']=='pass' and not entry.get('evidence'): _fail(f'Pass needs evidence: {key}',code='REPORT_INCONSISTENT')
         if entry['status']=='not_applicable' and not entry.get('reason'): _fail(f'Not applicable needs rationale: {key}',code='REPORT_INCONSISTENT')
@@ -636,4 +737,5 @@ def compact_report(report):
     checkpoints=[{'checkpoint_id':c['checkpoint_id'],'state':c['state'],'receipt':c['receipt']} for c in report.get('checkpoints',[])[-16:] if c.get('state')=='accepted_checkpoint' and c.get('receipt')]
     result={'report_version':'1.0','job_id':report['job_id'],'request_id':report['request_id'],'status':report['status'],'domain_outcome':report.get('domain_outcome','failed'),'candidate':report.get('candidate'),'acceptance':accepted,'counts':{k:v for k,v in report.get('counts',{}).items() if k in REPORT['properties']['counts']['properties']},'error':err,'source_protection':{'original_source_observed':{'status':os_status,'written_by_this_tool':False,'continuous_immutability_proven':False},'staged_snapshot_guarded':guard(source.get('staged_snapshot_guarded')),'resources_guarded':guard(source.get('resources_guarded')),'evidence':evidence},'checkpoints':checkpoints,'report':evidence,'next_step':cut(report.get('next_step','Inspect full report')),'warnings':warnings,'details_omitted':True,'details_reference':evidence}
     if 'topology_diagnostics' in report:result['topology_diagnostics']=report['topology_diagnostics']
+    if 'qualification_scope' in report:result['qualification_scope']=report['qualification_scope']
     return validate_report(result)

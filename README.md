@@ -1,73 +1,160 @@
-# Hard Surface Workbench 0.2.0
+# Hard Surface Workbench — reflected-anchor diagnostic candidate (dev.21)
 
-Experimental parameter-driven Blender hard-surface work units, with a standalone source CLI, JSON Schemas, and a minimal Blender sidebar.
+A development plugin and bundled CLI for protected, complete Blender work units.
+This source copy is not installed or enabled. No production or visual approval
+is conveyed by a source archive or passing HOST tests.
 
-**The meshes can still have poor edge flow and excessive face counts.** All-quad output is a structural property, not proof of good topology, good shading, or production readiness. Independent visual review is necessary. This is not a general CAD, subdivision, deformation, or manufacturing system.
+## Development status
 
-## What it does
+See the [development plan](docs/development-plan.md) for the exact evidence
+boundary through dev.21 and pending native, visual and acceptance gates.
+All-quad meshes may still have poor edge flow and excessive face counts.
 
-- `quad.panel`: bounded rounded plates, holes, counterbores, slots and integral lips
-- `quad.shell`: rounded enclosures in the supported four-mirrored-corner-seat layout, with declared posts and openings
-- `quad.fastener`: unthreaded shafts and heads, with an optional declared hex socket
-- Explicit work units, candidate-only saves, source hashes, checkpoints, bounded jobs and recovery
-- Actual control/evaluated topology, bounded triangle-intersection checks and real-edge wire observations
-- Declarative `hardsurface validate` schema 2.0: caller-supplied part identities, dimensions, probes and bounded contact regions
+## Source-bound reflected-strip placement
 
-Scene validation supports real mesh bodies and fails closed on unsupported rendered instances, particle geometry, and curves; it does not silently omit them.
+The optional per-view reflection anchor fixes diagnostic light placement for
+oblique flat faces. It authenticates native geometry/corner normals and camera
+binding, preserves source shape/shading, and reports predicted mirror hits
+separately from sampled PNG contrast. See [the contract](docs/reflection-anchor.md).
+This increment has HOST-only validation; native rendering and visual acceptance
+remain pending. Package protocol stays 0.2.0 for dispatcher compatibility;
+`CANDIDATE.json` and exact source identity distinguish dev.21-r1.
 
-There are no embedded project profiles or preset design dimensions. Public numerical fixtures are independent illustrative test inputs. Validation never loads an arbitrary script, and a successful validation command means a report was produced; check its geometry outcome and individual results.
+## Optional complete corner columns
 
-## Runtime and start
+The explicit `sparse_cage.corner_columns` selector adds two complete midpoint
+columns inside the existing sparse constructor. Semantic reconstruction and the
+bounded user axis-edit route remain explicit; experimental fitting coefficients
+are not enabled. See the [versioned constructor](docs/corner-midpoint-constructor.md).
 
-Use Linux, host Python 3.12+ and a separately installed Blender 5.2.x. Actual Blender qualification and its precise build are described in [validation](docs/validation.md); accepting a version is not evidence that every build has been tested. Saved-file protection requires a supported local Linux filesystem and rejects unsupported filesystems.
+## Sparse evaluated-mesh diagnostic
 
-From this directory:
+The explicit `source_bound_sparse_diagnostic_v1` profile samples a preserved
+source at L0–L3 and exports real indexed geometry with authenticated face domains.
+L2 is the formal target; available finite-distance/bbox screens and missing
+required checks are reported separately. No complete G3 or production pass is
+assigned. See [the bounded diagnostic contract](docs/sparse-subdivision-diagnostic.md).
 
-```sh
-export BLENDER_PATH=/absolute/path/to/your/blender
-./hardsurface-cli hardsurface describe --section quad.panel
-./hardsurface-cli hardsurface describe --section validate
-./hardsurface-cli hardsurface plan --request fixtures/box.json
-```
+## Current sparse route
 
-Global options precede the command:
+`quad.panel` with `topology_strategy: sparse_control_cage` constructs a bounded,
+closed, single sharp circular through-hole plate. Default A/B variants contain
+622/654 source quads respectively; top-plane counts are127/143, not whole-body
+counts. The default outer profile uses four bands at each roundover.
 
-```sh
-./hardsurface-cli --blender /absolute/path/to/your/blender --jobs-dir /tmp/your-new-jobs hardsurface run --request request.json
-```
+For new straight-structure work, declare the explicit versioned
+`sparse_cage.layout` fixed-frame policy. Its macrogrid is axis aligned and
+independent of live hole position or radius. The same ordered exterior slots
+continue through the upper roundover, side and lower roundover. Corner/tangent
+anchors are retained; local corner transitions remain visible.
 
-`BLENDER_PATH` selects the default Blender executable; otherwise the host searches `PATH`. `--blender` overrides it. `BLENDERCTL_PYTHON` selects the host Python interpreter. The launcher does not download or install software. Production work units require a source-bound reference approval input; inspect the planner/schema before running.
+The layout frame is caller-owned technical placement, chosen for the intended
+edit envelope. It is not a nominal design change or a universal range of legal
+hole positions. Insufficient spacing, clearance, convexity or local annulus
+angles outside30–150 degrees reject without moving protected geometry or
+relaxing tolerances. These are HOST construction gates, not shape acceptance.
 
-## Test and build
+See [the exact source-stage contract](docs/sparse-source-stage.md),
+[candidate identity](CANDIDATE.json), and the generated `schemas/` authority.
+The actual request step belongs in
+`params.design.state.features[].program.steps[]`.
 
-```sh
-python3 -B -m unittest discover -s tests -p 'test_*.py' -v
-python3 -B scripts/build_distribution.py --output /tmp/your-new-build
-```
+## Explicit axis-plane insertion
 
-The manifest-based builder creates a source ZIP, a Blender extension ZIP, checksums and a member manifest. It refuses existing output directories. Unpack source archives into a new directory. The extension archive is the sidebar/domain package. Use the source package for the standalone backend; it has no full blenderctl copy or external Python dependency.
+Opt in with `sparse_cage.insertion_policy: axis_plane_v1` and a declared fixed
+frame. Each insertion specifies east/south and fraction0.2–0.8 of the frozen
+BASE strip's common coordinate interval. It does not apply the same percentage
+to every unequal edge. All new east points share exactly one X coordinate, or
+south points one Y coordinate; existing vertices are preserved exactly.
 
-The package is source-distributed for review and development. **Extension installation, enablement, restart behavior and interactive end-to-end GUI use are not qualified by host tests or static packaging.** The sidebar validates request text; it is not a full interactive modeling application.
+At most two insertions are supported. One additional east or south cut can
+follow an initial east cut; duplicate, crowded, non-straddling, ambiguous and
+third cuts reject. Legacy top/bottom interfaces propagate32→34→36 through
+every outer profile and side. Inserted edge loops have separate semantic
+identities and verified closed valence-four continuation. They are not mislabeled
+as positive-Z boundary ports. A crossing cut explicitly expands the old loop
+and creates one new loop with complete lineage.
 
-Structured quad constructors do not need `slvs`. Legacy constraint solving requires a separately reviewed deployment; the native binary is not redistributed and the optional native tests skip when no deployment is configured. See [third-party notices](THIRD_PARTY_NOTICES.md).
+The saved-design patch appends exactly one declaration while preserving the
+entire old prefix. Policy, layout and nominal edits cannot be bundled into that
+transaction. Native epoch increments once and stale selections are invalidated.
+Public HOST axis transactions require canonical authored storage and reject
+unsupported rearranged HOST graph storage before mutation; validated native
+storage permutations remain supported through semantic reconstruction.
 
-## Optional blenderctl integration
+Default uninserted counts above are not the count after construction cuts.
+Always read actual whole-body and region counts from the current report. No
+unlimited repeat-edit or arbitrary existing-mesh repair capability is claimed.
 
-This repository owns the generic modeling and validation logic. The separate [blenderctl](https://github.com/tsist/blenderctl) integration branch `hard-surface-workbench-linux-0.2.0` only dispatches explicit work units to this checkout.
+## Mandatory complete-source preflight
 
-Use reviewed source checkouts in separate directories, then explicitly select this checkout:
+A fixed-frame request is admitted only after fresh whole-body HOST checks pass
+for authored metre coordinates and independently derived float32-metre storage
+predictions. Required gates include finite closed structure, exact authored
+identity, all five body regions, unchanged-default polygon quality, and
+conservative distinct-face intersection predictions in both coordinate domains.
+Every face is checked, including ordinary roundover faces and wall support bands.
+No absent, failed or `not_run` predicate can be replaced by a generic success bit.
 
-```sh
-export BLENDERCTL_HARDSURFACE_ROOT=/absolute/path/to/blender-hard-surface-workbench
-python3 /absolute/path/to/blenderctl/tools/blenderctl/cli.py hardsurface describe --section validate
-```
+New-scene source-cage submissions perform this plan before creating a queue
+record or launching any process. Saved-source edits first obtain their guarded
+saved state, then run the same planner before construction. Native verification
+still runs independently: a HOST prediction is not native evidence.
 
-The environment variable trusts the source code at that local path for execution. Review it before use. Neither repository automatically clones, downloads, installs, enables an add-on, or changes global configuration. Record the commit SHA of each checkout for reproducibility. The standalone source launcher also works without blenderctl.
+A multi-state project preflight must declare exact state names and independently
+computed expected source bindings. Aggregate acceptance requires every state,
+all its gates, and its exact binding; repeated reports cannot stand in for edits.
+Use a dedicated fresh manifest-exact source copy for the project matrix,
+separate from unit-test execution copies and their generated evidence folders.
+Retain raw per-state reports and before/after implementation fingerprints. Neutral unit
+test counts cannot substitute for the current project's complete fixture matrix.
 
-## 中文说明
+## Complete work units and evidence
 
-这是参数驱动的实验性插件，所有设计尺寸与验证规则由调用者明确提供，不包含项目专属参数或模型。当前仍可能存在布线不佳、面数过多的问题；全四边面不等于高质量拓扑或生产就绪。圆角壳体目前限定为四镜像角座结构，接触验证限定为轴对齐平面上的显式矩形/圆盘区域及合格实际孔界，不支持任意机械结构或任意曲面接触。
+- Bundled `./hardsurface-cli describe --section quad.panel` exposes current fields
+- `hardsurface run --request` owns construction, required checks, guarded save
+  and independent reopen as one scheduled unit
+- `quality.stage: source_cage`, preview level0 and disabled rendered wire keep
+  source construction separate from evaluated geometry and rendering
+- Source receipts remain partial verified candidates; evaluated shape,
+  surface observation and production qualification stay `not_run`
+- `hardsurface mesh inspect --request` extracts saved raw mesh data and writes
+  lightweight JSON/SVG whole/region views without modifier evaluation
+- Exact semantic identities, parameter bindings, ordered ports and edit scopes
+  guard independent nominal edits and bounded whole-body strip insertion
+- Fixed-frame insertion fractions0.2–0.8 preserve equal coordinate components;
+  floating interpolation is not allowed to shift a bound constant plane
 
-## License
+HOST geometry and storage-protocol mocks do not count as Blender execution.
+The sparse full-qualification route currently fails closed. Actual source
+review, native edits, evaluated shape, surface observation and holdouts require
+separate evidence in their intended order.
 
-GPL-3.0-or-later. No warranty. This modified public-source distribution was prepared on 2026-10-05; see [LICENSE](LICENSE) and [release notes](docs/public-release.md).
+## Compatibility and boundaries
+
+Layout `fixed-frame-axis-aligned/1.1` balances the two eastern exterior spans;
+`1.0` retains its earlier guard-relative corridor formula exactly. Both leave
+frame selection and support spacing as explicit caller-owned technical values.
+The semantic v2 connectivity graph is retained, while explicit layout schema
+and geometry candidate version identify the revised placement policy. Omitting
+`layout` preserves the earlier sparse mapping for compatibility; existing
+saved models are never silently remapped. Legacy fractional interpolation is
+retained for exact HOST reconstruction; certain non-midpoint legacy fractions
+can still reject at the exact port-plane guard. The new fixed-frame policy
+fixes that behavior without changing historical coordinates. Older construction and diagnostic
+routes remain explicit compatibility interfaces. Their historical results do
+not qualify this candidate.
+
+The bundled CLI is the executable entry point. No installed global blenderctl
+wrapper or global plugin configuration is assumed. Qualified source guards and
+bounded job resource policies remain mandatory. Game export and other asset
+families are later development stages.
+
+## HOST tests
+
+Run `python3 -B -m unittest discover -s tests -v` from an isolated copy of this
+source tree with a fresh cache prefix. Preserve executable modes when copying.
+Generated schemas must match their Python authorities. Tests are neutral HOST
+fixtures, not a claim of native or user visual qualification.
+
+SPDX-License-Identifier: GPL-3.0-or-later

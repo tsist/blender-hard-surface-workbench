@@ -16,8 +16,66 @@ from pathlib import Path
 
 from . import contract as c
 from .io import RuntimeFailure, checked_path, descriptor, verify_descriptor
+from .sparse_observation import OPTION as SPARSE_OBSERVATION_OPTION
+from . import reflection_anchor
 
 SAMPLES = 32
+# Development-only observation preset: fixed, texture-free display diagnostics.
+# These values are neither an asset material nor a surface-quality score.
+DIAGNOSTIC_PRESETS = ('neutral', 'reflection_strips')
+REFLECTION_SAMPLES = 128
+REFLECTION_LIGHTS = ((-.75, 0, 2.5, 60), (0, 0, 2.5, 60), (.75, 0, 2.5, 60))
+LEGACY_LIGHTS = ((-3, 4, 6, 500), (4, 1, 3, 300), (0, -3, -4, 350))
+_REFLECTION_ROTATION = c.optional_default(c.number(minimum=-180, maximum=180), 0)
+
+
+def diagnostic_settings(preset, reflection_rotation_degrees=0):
+    """Independent fixed values; host tests need no Blender import."""
+    if preset not in DIAGNOSTIC_PRESETS:
+        raise c.ContractError('INVALID_REQUEST', 'Unknown observation diagnostic preset')
+    angle = c._validate(reflection_rotation_degrees, _REFLECTION_ROTATION,
+                        '$.params.reflection_rotation_degrees')
+    reflective = preset == 'reflection_strips'
+    if not reflective and angle != 0:
+        raise c.ContractError('INVALID_REQUEST',
+                              'Nonzero reflection rotation requires diagnostic_preset=reflection_strips',
+                              '$.params.reflection_rotation_degrees')
+    return {
+        'preset': preset,
+        'reflection_rotation_degrees': angle,
+        'reflection_rotation_semantics': 'counterclockwise_in_camera_image; camera_unchanged',
+        'contract': 'HS_REFLECTION_STRIPS_V1' if reflective else 'HS_NEUTRAL_LEGACY_V1',
+        'material_override': {'base_color': [.72, .72, .72, 1],
+                              'roughness': .08 if reflective else .5,
+                              'metallic': 1.0 if reflective else 0.0},
+        'world_color': [.08, .08, .08, 1], 'world_strength': .025 if reflective else .4,
+        'samples': REFLECTION_SAMPLES if reflective else SAMPLES,
+        'denoising': not reflective,
+        'light_shape': 'RECTANGLE' if reflective else 'DISK',
+        'light_size_extent': .12 if reflective else 4.0,
+        'light_size_y_extent': 4.0 if reflective else None,
+        'lights_camera_basis': [list(v) for v in (REFLECTION_LIGHTS if reflective else LEGACY_LIGHTS)],
+        'light_orientation': 'parallel_to_camera_plane' if reflective else 'aim_at_center',
+        'scope': 'temporary_view_layer_override_on_frozen_proxies',
+        'textures_created': False, 'surface_quality_inference': 'none',
+    }
+
+
+def _rotated_camera_plane_basis(right, camera_up, angle):
+    """Rotate a right-handed camera XY basis about outward (+camera Z).
+
+    The long rectangle axis is local Y: 0 degrees is camera-up (vertical),
+    +90 degrees is negative camera-right (horizontal). Spacing is local X.
+    Return original values at zero so legacy floating-point placement/aiming
+    remains exactly unchanged. Inputs are the orthonormal camera axes.
+    """
+    if angle == 0:
+        return right, camera_up
+    radians = math.radians(angle)
+    cosine, sine = math.cos(radians), math.sin(radians)
+    return (tuple(r * cosine + u * sine for r, u in zip(right, camera_up)),
+            tuple(-r * sine + u * cosine for r, u in zip(right, camera_up)))
+
 MAX_PREVIEW_BYTES = 2 * 1024 * 1024
 MAX_COORDINATE_MM = 100000
 DIRECTIONS = {
@@ -40,6 +98,7 @@ _EXPLOSION = {
     'additionalProperties': c.number(minimum=-500, maximum=500), 'default': {},
 }
 _COMMON_VIEW = {
+    'reflection_anchor': reflection_anchor.OPTION,
     'name': _NAME,
     'mesh_state': c.enum('control','evaluated'),
     'explode_z_mm': _EXPLOSION,
@@ -58,6 +117,12 @@ REQUEST = c.obj({
         'request_id': c.string(pattern=r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$', minLength=1, maxLength=128),
         'source': c.FILE, 'views': c.array(_VIEW, 1, 16),
         'wire': c.optional_default(c.WIRE_STYLE,{}),
+        'diagnostic_preset': c.optional_default(c.enum(*DIAGNOSTIC_PRESETS), 'neutral'),
+        'reflection_rotation_degrees': _REFLECTION_ROTATION,
+        # No default: old normalized requests and their fingerprints are stable.
+        'normal_policy': c.const('geometry_normals_v1'),
+        'sparse_evaluation': SPARSE_OBSERVATION_OPTION,
+        'max_tree_rss_bytes': c.integer(minimum=1024**3, maximum=4*1024**3),
         'cpu_threads': c.optional_default(c.integer(minimum=1, maximum=4), 2),
         'wall_seconds': c.optional_default(c.number(exclusiveMinimum=0, maximum=600), 600),
     }, ['request_id', 'source', 'views']),
@@ -66,9 +131,28 @@ REQUEST = c.obj({
 
 def schema():
     """Return an independent draft-2020-12 schema for the observation request."""
-    return {'$schema': 'https://json-schema.org/draft/2020-12/schema',
-            'title': 'Hard Surface Workbench read-only observation 1.0',
-            **copy.deepcopy(REQUEST)}
+    result = {'$schema': 'https://json-schema.org/draft/2020-12/schema',
+              'title': 'Hard Surface Workbench read-only observation 1.0',
+              **copy.deepcopy(REQUEST)}
+    # Mirror the runtime cross-field rule for external JSON Schema clients.
+    result['properties']['params']['allOf'] = [{
+        'if': {'required': ['diagnostic_preset'],
+               'properties': {'diagnostic_preset': {'const': 'reflection_strips'}}},
+        'then': {'required': ['wire'], 'properties': {
+            'wire': {'required': ['enabled'], 'properties': {'enabled': {'const': False}}}}},
+        'else': {'properties': {'reflection_rotation_degrees': {'const': 0}}},
+    }]
+    result['properties']['params']['allOf'].append({
+        'if': {'properties': {'views': {'contains': {'required': ['reflection_anchor']}}}},
+        'then': {'required': ['normal_policy', 'diagnostic_preset'], 'properties': {
+            'normal_policy': {'const': 'geometry_normals_v1'},
+            'diagnostic_preset': {'const': 'reflection_strips'}}}})
+    for variant in result['properties']['params']['properties']['views']['items']['oneOf']:
+        variant['allOf'] = [{'if': {'required': ['reflection_anchor']}, 'then': {
+            'required': ['camera', 'visible_object_ids'], 'properties': {
+                'mesh_state': {'const': 'evaluated'}, 'explode_z_mm': {'maxProperties': 0},
+                'visible_object_ids': {'minItems': 1, 'maxItems': 1}}}}]
+    return result
 
 
 def _check(value, node, path='$'):
@@ -123,6 +207,17 @@ def validate_request(request):
     result = _check(request, REQUEST)
     c._paths(result)
     p = result['params']
+    if 'max_tree_rss_bytes' in p and type(request['params']['max_tree_rss_bytes']) is not int:
+        raise c.ContractError('INVALID_REQUEST', 'Memory budget must be an integer byte count',
+                              '$.params.max_tree_rss_bytes')
+    if p['diagnostic_preset'] != 'reflection_strips' and p['reflection_rotation_degrees'] != 0:
+        raise c.ContractError('INVALID_REQUEST',
+                              'Nonzero reflection rotation requires diagnostic_preset=reflection_strips',
+                              '$.params.reflection_rotation_degrees')
+    if p['diagnostic_preset'] == 'reflection_strips' and p['wire']['enabled']:
+        raise c.ContractError('INVALID_REQUEST',
+                              'Reflection strips require explicit wire.enabled=false; mesh edges obscure reflected highlights',
+                              '$.params.wire.enabled')
     if Path(p['source']['file']).suffix.lower() != '.blend':
         raise c.ContractError('INVALID_REQUEST', 'Source must be a saved .blend file')
     names = [view['name'] for view in p['views']]
@@ -142,6 +237,10 @@ def validate_request(request):
             # The specified Z up axis cannot define roll for a vertical ray.
             if math.hypot(ray[0], ray[1]) <= math.sqrt(sum(x * x for x in ray)) * 1e-8:
                 raise c.ContractError('INVALID_REQUEST', 'Camera ray is parallel to its Z up axis; use a fixed top/bottom view', path)
+    for view in p['views']:
+        reflection_anchor.validate_option(p, view)
+    from .sparse_observation import validate_option
+    validate_option(p)
     return result
 
 
@@ -302,7 +401,7 @@ def _mesh_record(mesh):
             'hash_semantics': 'HS_OBSERVATION_POSITIONS_TOPOLOGY_V1'}
 
 
-def execute(request, job_dir):
+def execute(request, job_dir, *, _source_guard=None):
     """Render a finite observation set in an already opened audited worker scene.
 
     The host owns source guards, worker startup, dependency audit, resource
@@ -310,6 +409,18 @@ def execute(request, job_dir):
     """
     request = validate_request(request)
     p = request['params']
+    if 'sparse_evaluation' in p:
+        from .sparse_observation import execute_sparse
+        return execute_sparse(request, job_dir, observe=execute)
+    diagnostic = diagnostic_settings(p['diagnostic_preset'], p['reflection_rotation_degrees'])
+    anchored = any('reflection_anchor' in view for view in p['views'])
+    if anchored:
+        diagnostic['placement_contract'] = 'HS_REFLECTION_ANCHOR_V1_per_opt_in_view'
+        diagnostic['placement_note'] = 'Legacy layout values apply only to unanchored views; actual anchored layout is reported per preview'
+    normal_isolation = p.get('normal_policy') == 'geometry_normals_v1'
+    if normal_isolation:
+        from . import observation_normals as normal_checks
+    reflective = p['diagnostic_preset'] == 'reflection_strips'
     states={v['mesh_state'] for v in p['views']}
     if len(states)!=1:raise RuntimeFailure('OBSERVATION_STATE_BATCH','Each worker must observe exactly one mesh state')
     mesh_state=next(iter(states))
@@ -353,6 +464,7 @@ def execute(request, job_dir):
     original_camera, original_world = scene.camera, scene.world
     created_objects, created_data = [], []
     proxies, geometry = {}, {}
+    normal_sources, normal_proxies = {}, {}
     changed = []
 
     def assign(owner, attr, value):
@@ -362,6 +474,15 @@ def execute(request, job_dir):
     def deadline():
         if time.monotonic() - started > p['wall_seconds']:
             raise RuntimeFailure('OBSERVATION_DEADLINE', 'Observation wall budget exhausted')
+
+    def attest_normals(phase, view_name=None):
+        """Re-read real source state and frozen copies, never repair shading."""
+        if _source_guard is not None:
+            _source_guard(phase)
+        return normal_checks.attest(source_objects, proxies, normal_sources, normal_proxies,
+            mesh_state=mesh_state, depsgraph=bpy.context.evaluated_depsgraph_get(), geometry_record=_mesh_record,
+            view_layer=view_layer, material=material, diagnostic=diagnostic, expected_material=normal_material,
+            phase=phase, view_name=view_name)
 
     def restore_objects():
         for obj, (matrix, location, hidden, viewport_hidden) in old_objects.items():
@@ -392,6 +513,9 @@ def execute(request, job_dir):
             evaluated = source_object.evaluated_get(depsgraph)
             state_mesh=source_object.data if mesh_state=='control' else evaluated.data
             original_geometry = _mesh_record(state_mesh)
+            if normal_isolation:
+                normal_sources[oid] = normal_checks.source_record(
+                    source_object, mesh_state, depsgraph, _mesh_record)
             total_vertices += original_geometry['vertices']
             total_loops += original_geometry['loops']
             if total_vertices > 1000000 or total_loops > 4000000:
@@ -402,6 +526,10 @@ def execute(request, job_dir):
             if original_geometry != proxy_geometry:
                 raise RuntimeFailure('OBSERVATION_GEOMETRY', 'Frozen proxy differs from source evaluated geometry',
                                      object_id=oid, feature_id=source_object.get('hs_feature_id'))
+            if normal_isolation:
+                normal_proxies[oid] = normal_checks.mesh_record(mesh, _mesh_record)
+                normal_checks.require_equal(normal_sources[oid]['source_mesh'], normal_proxies[oid],
+                                            role='initial_frozen_proxy', object_id=oid)
             proxy = source_object.copy()
             created_objects.append(proxy)
             proxy.name = 'HS observation proxy ' + oid
@@ -414,12 +542,18 @@ def execute(request, job_dir):
             proxies[oid] = proxy
             geometry[oid] = {'mesh_state':mesh_state,'source_mesh': original_geometry, 'frozen_proxy': proxy_geometry,
                              'geometry_unchanged': True, 'evaluation': 'SOURCE_CONTROL_MESH' if mesh_state=='control' else 'VIEWPORT_WITH_RENDER_MATCHING_MODIFIERS'}
+            if normal_isolation:
+                geometry[oid]['normal_isolation'] = {'policy': normal_checks.POLICY,
+                    'source': normal_sources[oid], 'frozen_proxy': normal_proxies[oid],
+                    'normal_sharp_smooth_unchanged': True,
+                    'normal_origin': 'native_geometry_generated_preserving_source_smooth_faces_and_sharp_edges',
+                    'normal_recomputed_transferred_or_authored_by_observer': False}
         assign(scene.render, 'engine', 'CYCLES')
         assign(scene.cycles, 'device', 'CPU')
         assign(scene.cycles, 'shading_system', False)
-        assign(scene.cycles, 'samples', SAMPLES)
+        assign(scene.cycles, 'samples', diagnostic['samples'])
         assign(scene.cycles, 'use_adaptive_sampling', False)
-        assign(scene.cycles, 'use_denoising', True)
+        assign(scene.cycles, 'use_denoising', diagnostic['denoising'])
         assign(scene.cycles, 'denoiser', 'OPENIMAGEDENOISE')
         assign(scene.cycles, 'seed', 0)
         assign(scene.cycles, 'use_animated_seed', False)
@@ -452,8 +586,8 @@ def execute(request, job_dir):
         created_data.append((bpy.data.worlds, world))
         world.use_nodes = True
         background = world.node_tree.nodes.get('Background')
-        background.inputs['Color'].default_value = (.08, .08, .08, 1)
-        background.inputs['Strength'].default_value = .4
+        background.inputs['Color'].default_value = diagnostic['world_color']
+        background.inputs['Strength'].default_value = diagnostic['world_strength']
         scene.world = world
         material = bpy.data.materials.new('HS observation temporary neutral white')
         created_data.append((bpy.data.materials, material))
@@ -461,10 +595,16 @@ def execute(request, job_dir):
         material.diffuse_color = (.72, .72, .72, 1)
         bsdf = material.node_tree.nodes.get('Principled BSDF')
         bsdf.inputs['Base Color'].default_value = (.72, .72, .72, 1)
-        bsdf.inputs['Roughness'].default_value = .5
+        bsdf.inputs['Roughness'].default_value = diagnostic['material_override']['roughness']
+        bsdf.inputs['Metallic'].default_value = diagnostic['material_override']['metallic']
         for layer in scene.view_layers:
             assign(layer, 'use', layer == view_layer)
         assign(view_layer, 'material_override', material)
+        if normal_isolation:
+            normal_material = normal_checks.material_record(material, diagnostic)
+            diagnostic['normal_isolation'] = {'policy': normal_checks.POLICY,
+                'actual_material': normal_material,
+                'source_shading_override': False, 'normal_repair_or_quantization': False}
 
         def collections(root):
             yield root
@@ -496,7 +636,7 @@ def execute(request, job_dir):
             light = bpy.data.objects.new(data.name, data)
             created_objects.append(light)
             scene.collection.objects.link(light)
-            data.shape = 'DISK'
+            data.shape = diagnostic['light_shape']
             lights.append(light)
 
         for view in p['views']:
@@ -562,16 +702,66 @@ def execute(request, job_dir):
             # Camera-relative key/fill/rim also illuminate bottom and cover
             # undersides; fixed +Z lights would leave these views unreadable.
             outward = (camera.location - target).normalized()
+            light_right, light_up = right, camera_up
+            if reflective and p['reflection_rotation_degrees'] != 0:
+                light_right, light_up = map(Vector, _rotated_camera_plane_basis(
+                    right, camera_up, p['reflection_rotation_degrees']))
             lighting = []
-            for light, (x, y, z, power) in zip(lights, ((-3, 4, 6, 500), (4, 1, 3, 300), (0, -3, -4, 350))):
-                light.location = center + (right * x + camera_up * y + outward * z) * extent
-                aim(light, center, camera_up)
+            for light, (x, y, z, power) in zip(lights, diagnostic['lights_camera_basis']):
+                light.location = center + (light_right * x + light_up * y + outward * z) * extent
+                # Parallel rectangular emitters keep straight strips in the
+                # same camera-relative frame for every view, including bottom.
+                aim(light, light.location - outward * extent if reflective else center, light_up)
                 light.data.energy = power * extent * extent
-                light.data.size = extent * 4
-                lighting.append({'type': 'AREA', 'role': ('key', 'fill', 'rim')[len(lighting)],
+                light.data.size = extent * diagnostic['light_size_extent']
+                if reflective:
+                    light.data.size_y = extent * diagnostic['light_size_y_extent']
+                lighting.append({'type': 'AREA', 'role': ('strip_left', 'strip_center', 'strip_right')[len(lighting)] if reflective else ('key', 'fill', 'rim')[len(lighting)],
                                  'position_mm': [float(v) * 1000 for v in light.location],
                                  'energy_w': float(light.data.energy), 'size_mm': float(light.data.size) * 1000,
-                                 'color': [float(v) for v in light.data.color]})
+                                 'color': [float(v) for v in light.data.color],
+                                 'shape': light.data.shape,
+                                 'size_y_mm': float(light.data.size_y) * 1000 if reflective else None,
+                                 'rotation_euler': [float(v) for v in light.rotation_euler],
+                                 'short_axis_world': [float(v) for v in light.rotation_euler.to_matrix().col[0]],
+                                 'long_axis_world': [float(v) for v in light.rotation_euler.to_matrix().col[1]],
+                                 'outward_axis_world': [float(v) for v in light.rotation_euler.to_matrix().col[2]]})
+            anchor_evidence = None
+            coverage_samples = None
+            if 'reflection_anchor' in view:
+                from . import reflection_coverage
+                q = view['reflection_anchor']
+                proxy = proxies[q['object_id']]
+                anchor_camera = {'position_mm': [float(v)*1000 for v in camera.location],
+                    'ortho_scale_mm': float(camera_data.ortho_scale)*1000,
+                    'clip_start_m': float(camera_data.clip_start), 'clip_end_m': float(camera_data.clip_end)}
+                context = reflection_coverage.prepare(proxy, view, q, source_before['sha256'],
+                    normal_proxies[q['object_id']], anchor_camera, right, camera_up, outward)
+                planned = reflection_anchor.plan(context['point'], context['normal'], outward,
+                    right, camera_up, q, p['reflection_rotation_degrees'])
+                for light, spec, record in zip(lights, planned['lights'], lighting):
+                    light.location = Vector(spec['position_mm'])*.001
+                    light.rotation_euler = Matrix((spec['short_axis_world'], spec['long_axis_world'],
+                        spec['outward_axis_world'])).transposed().to_euler()
+                    light.data.size = spec['size_mm']*.001
+                    light.data.size_y = spec['size_y_mm']*.001
+                    record.update(position_mm=[float(v)*1000 for v in light.location],
+                        size_mm=float(light.data.size)*1000, size_y_mm=float(light.data.size_y)*1000,
+                        rotation_euler=[float(v) for v in light.rotation_euler],
+                        short_axis_world=[float(v) for v in light.rotation_euler.to_matrix().col[0]],
+                        long_axis_world=[float(v) for v in light.rotation_euler.to_matrix().col[1]],
+                        outward_axis_world=[float(v) for v in light.rotation_euler.to_matrix().col[2]])
+                    record['energy_policy'] = 'unchanged legacy power; emitter area changed and recorded'
+                    record['normalize'] = bool(light.data.normalize) if hasattr(light.data, 'normalize') else None
+                    record['spread_radians'] = float(light.data.spread) if hasattr(light.data, 'spread') else None
+                # Predict against actual native emitter values after conversion.
+                planned['lights'] = copy.deepcopy(lighting)
+                prediction, coverage_samples = reflection_coverage.predict(context, view, q, planned)
+                anchor_evidence = {'binding': context['identity'], 'request': copy.deepcopy(q),
+                    'anchor_pixel_normalized': context['anchor_pixel_normalized'],
+                    'plan': planned, 'predicted': prediction,
+                    'diagnostic_coverage': 'inconclusive', 'visual_acceptance': 'not_run'}
+                deadline()
             scene.render.resolution_x, scene.render.resolution_y = view['width'], view['height']
             output = paths[view['name']]
             # Recheck immediately before writing; only this worker owns the job.
@@ -586,8 +776,14 @@ def execute(request, job_dir):
                              'clip_start_m': camera_data.clip_start, 'clip_end_m': camera_data.clip_end}
             from .wire_overlay import prepare as prepare_wire
             wire=prepare_wire(scene,view_layer,[proxies[oid] for oid in visible_objects],camera,{**p['wire'],'mesh_state':mesh_state},view)
-            try:bpy.ops.render.render(write_still=True, layer=view_layer.name)
+            view_normal_checks = []
+            try:
+                if normal_isolation:
+                    view_normal_checks.append(attest_normals('before_render', view['name']))
+                bpy.ops.render.render(write_still=True, layer=view_layer.name)
             finally:wire.cleanup()
+            if normal_isolation:
+                view_normal_checks.append(attest_normals('after_render', view['name']))
             for oid, source_object in visible_objects.items():
                 if _mesh_record(proxies[oid].data) != geometry[oid]['frozen_proxy']:
                     raise RuntimeFailure('OBSERVATION_GEOMETRY', 'Display proxy geometry changed while rendering',
@@ -595,8 +791,25 @@ def execute(request, job_dir):
             image = _png_record(output, view['width'], view['height'])
             outputs.append({**image, 'view': view['name'], 'configuration': copy.deepcopy(view),
                             'camera': camera_record, 'lighting': lighting,
+                            **({'native_projection_inputs': {
+                                'pixel_aspect_x': float(scene.render.pixel_aspect_x),
+                                'pixel_aspect_y': float(scene.render.pixel_aspect_y),
+                                'resolution_percentage': int(scene.render.resolution_percentage),
+                                'shift_x': float(camera_data.shift_x), 'shift_y': float(camera_data.shift_y)}} if _source_guard is not None else {}),
                             'temporary_transformations': transformations,
-                            'samples': SAMPLES, 'mesh_state':mesh_state,'wire':wire.evidence,'visual_acceptance': 'not_run'})
+                            'samples': diagnostic['samples'], 'diagnostic': copy.deepcopy(diagnostic), 'mesh_state':mesh_state,'wire':wire.evidence,'visual_acceptance': 'not_run'})
+            if anchor_evidence is not None:
+                anchor_evidence['observed'] = reflection_coverage.observe_png(output, view, coverage_samples)
+                if anchor_evidence['observed']['status'] == 'fail':
+                    anchor_evidence['diagnostic_coverage'] = 'fail'
+                outputs[-1]['reflection_anchor'] = anchor_evidence
+                outputs[-1]['diagnostic']['light_orientation'] = 'source_bound_reflection_plane'
+                outputs[-1]['diagnostic']['lights_camera_basis'] = None
+                outputs[-1]['diagnostic']['light_size_extent'] = None
+                outputs[-1]['diagnostic']['light_size_y_extent'] = None
+                outputs[-1]['diagnostic']['contract'] = 'HS_REFLECTION_ANCHOR_V1'
+            if normal_isolation:
+                outputs[-1]['normal_isolation_checks'] = view_normal_checks
             restore_objects()
             deadline()
     finally:
@@ -619,13 +832,21 @@ def execute(request, job_dir):
         if (_matrix_values(obj.matrix_world) != _matrix_values(matrix)
                 or obj.hide_render != hidden or obj.hide_viewport != viewport_hidden):
             raise RuntimeFailure('OBSERVATION_RESTORE', 'In-memory object state was not restored', object_name=obj.name)
+    if normal_isolation:
+        graph = bpy.context.evaluated_depsgraph_get()
+        for oid, obj in source_objects.items():
+            normal_checks.require_equal(normal_sources[oid], normal_checks.source_record(obj, mesh_state, graph, _mesh_record),
+                                        role='source_after_restoration', object_id=oid)
+        diagnostic['normal_isolation']['source_after_restoration_unchanged'] = True
     return {'outcome': 'pass', 'operation': 'hardsurface.observe', 'schema_version': '1.0',
             'request_id': p['request_id'],
             'source': source_before, 'source_after': source_after, 'opened_source': opened_before,
             'source_sha256': source_before['sha256'], 'source_semantics': 'SAVED_DISK_V1',
             'scene': scene.name, 'scene_units': units, 'view_layer': view_layer.name,
-            'previews': outputs, 'engine': 'CYCLES', 'device': 'CPU', 'samples': SAMPLES,'display_transform':'AgX','denoising':'OPENIMAGEDENOISE',
-            'material_override': {'base_color': [.72, .72, .72, 1], 'roughness': .5},
+            'previews': outputs, 'engine': 'CYCLES', 'device': 'CPU', 'samples': diagnostic['samples'],
+            'display_transform':'AgX','denoising':'OPENIMAGEDENOISE' if diagnostic['denoising'] else 'disabled',
+            'material_override': copy.deepcopy(diagnostic['material_override']),
+            'diagnostic': copy.deepcopy(diagnostic),
             'cpu_threads': p['cpu_threads'], 'wall_seconds': p['wall_seconds'],
             'elapsed_seconds': time.monotonic() - started, 'saved_candidate_modified': False,
             'temporary_state_restored': True, 'blend_save_performed': False,

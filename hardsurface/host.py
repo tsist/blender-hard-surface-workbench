@@ -51,6 +51,11 @@ def compact(report):
     from .contract import compact_report
     return compact_report(report)
 
+def close_qualification_scope(report):
+    """Late guard/resource failures must retain their real failure receipt."""
+    if report.get('status')!='succeeded':report.pop('qualification_scope',None)
+    return report
+
 
 def worker(payload,job,budget,store,blender,label,*,check_cancel=True):
     from .jobs import OwnedProcess
@@ -62,7 +67,8 @@ def worker(payload,job,budget,store,blender,label,*,check_cancel=True):
     threads=int(payload.get('request',{}).get('params',{}).get('budgets',{}).get('cpu_threads',payload.get('request',{}).get('params',{}).get('cpu_threads',2)))
     env['OMP_NUM_THREADS']=str(threads)
     cmd=[str(blender),'--background','--factory-startup','--disable-autoexec','--threads',str(threads),'--python',str(ROOT/'blender_worker.py'),'--','--payload',str(path)]
-    process=OwnedProcess(cmd,cwd=ROOT,budget=budget,cancel_check=(lambda:is_cancelled(store,job.name)) if check_cancel else None,env=env,stdout_path=job/(label+'.log'),stderr_path=job/(label+'-stderr.log'),disk_root=job)
+    process=OwnedProcess(cmd,cwd=ROOT,budget=budget,cancel_check=(lambda:is_cancelled(store,job.name) or bool(getattr(budget,'cancel_requested',lambda:False)())) if check_cancel else None,env=env,stdout_path=job/(label+'.log'),stderr_path=job/(label+'-stderr.log'),disk_root=job)
+    if hasattr(budget,'claim_process'):budget.claim_process()
     result=process.run();atomic_json(job/(label+'-process.json'),result)
     if result.get('status')!='succeeded' or result.get('returncode')!=0:
         failed=load(out) if out.is_file() else {}
@@ -294,6 +300,9 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
     from .planner import plan_request
     store=store_for(root);store.parent_cancel_id=parent_cancel_id;job=store.job_dir(job_id);request=validate_request(load(job/'request.json'));p=request['params']
     started=store.status(job_id).get('metadata',{}).get('admitted_monotonic',started or time.monotonic());budget=shared_budget or make_budget(p,started)
+    if shared_budget is not None and hasattr(shared_budget,'claim_process'):
+        from .edit_review import JointBudget
+        budget=JointBudget(make_budget(p,started),shared_budget)
     report={'report_version':'1.0','job_id':job_id,'request_id':store.status(job_id)['request_id'],'original_request_id':p['request_id'],'status':'running','domain_outcome':'failed','candidate':None,'checkpoints':[],'warnings':[],'acceptance':{k:{'status':'not_run'} for k in ('technical','preservation','dependency_reproduction','performance','visual','user_feedback','method_acceptance')}}
     store.update(job_id,status='running',supervisor_pid=os.getpid());atomic_json(job/'progress.json',{'phase':'preflight','time':time.time()})
     try:
@@ -316,6 +325,7 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
                     saved_state=inspection.get('design_state',inspection.get('scene_snapshot',{}).get('design_state'))
                     saved_solutions=inspection.get('saved_solutions',inspection.get('scene_snapshot',{}).get('saved_solutions',{}))
                 plan=plan_request(request,saved_state=saved_state,reference_approval=approval);atomic_json(job/'plan.json',plan)
+                if hasattr(budget,'validate_edit_plan'):budget.validate_edit_plan(plan,saved_state=saved_state)
                 fp={'request':fingerprint(request),'plan':{'base':plan['plan_sha256'],'strategy':(resume_checkpoint['fingerprints']['plan']['strategy'] if resume_checkpoint else p.get('execution',{}).get('technical_strategies',['declared'])[0])},'implementation':identity,'source':p['source'],'resources':p['resources'],'design':plan['design_sha256'],'reference':{'package':p.get('reference_package',{'status':'not_applicable_fixture'}),'approval':plan['reference_gate']},'context':p['context']}
                 solved={}
                 state=plan['resolved_design_state']
@@ -394,6 +404,9 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
                 report['acceptance'].update({k:{'status':'pass','evidence':str(job/'reopen-result.json')} for k in ('technical','preservation','dependency_reproduction')})
                 report['counts']=core.get('counts',{'steps':len(plan['steps'])})
                 report['core_report']=descriptor(job/'core-report.json')
+                if p['quality'].get('stage','full')=='source_cage':
+                    report['qualification_scope']=core['qualification_scope']
+                    report['source_mesh_inspection']=core['source_mesh_inspection']
                 report['fingerprints']=fp
             report['source_protection']={'original_source_observed':stage['original_source_observed'],'staged_snapshot_guarded':inner.report(),'resources_guarded':outer.report()}
         # final guard.close has now validated both scopes
@@ -410,12 +423,16 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
         report['checkpoints'].append(checkpoint)
         test_fault(request,'after_accept')
         report['status']='succeeded';report['domain_outcome']='pass'
+        if p['quality'].get('stage','full')=='source_cage':
+            report['domain_outcome']='partial'
         report['acceptance']['performance']={'status':'pass','evidence':'Aggregate observed budget not exceeded; memory sampling is not hard isolation'}
         if p['purpose']=='contract_fixture':
             report['acceptance']['visual']={'status':'not_applicable','reason':'Numerical contract fixture; no practical visual acceptance'}
             report['acceptance']['user_feedback']={'status':'not_applicable','reason':'Numerical contract fixture'}
-            report['candidate']['state']='usable_delivery'
+            if p['quality'].get('stage','full')!='source_cage':report['candidate']['state']='usable_delivery'
         report['next_step']=('Review numerical fixture evidence; this fixture has no production visual acceptance' if p['purpose']=='contract_fixture' else 'Review the verified production candidate against the approved reference; visual, user feedback and method acceptance remain pending')
+        if p['quality'].get('stage','full')=='source_cage':
+            report['next_step']='Review the complete actual source-cage inspection; evaluated dimensions, surface quality and production acceptance remain not_run. Obtain the required structure review before dependent shape fitting.'
         test_fault(request,'before_receipt')
     except BaseException as exc:
         e=error_dict(exc);report['error']=e;report['traceback']=traceback.format_exc()
@@ -431,6 +448,7 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
     if report['status']=='succeeded' and estimated_final>budget.limits.max_disk_bytes:
         report.update(status='failed',domain_outcome='failed',candidate=None,error={'code':'RESOURCE_LIMIT','detail_code':'BUDGET_EXCEEDED','message':'Final report and receipt reservation exceeds aggregate artifact budget','details':{'observed_bytes':observed_bytes,'estimated_final_bytes':estimated_final,'limit':budget.limits.max_disk_bytes},'retry_class':'new_budget_required'})
         report['acceptance']['performance']={'status':'fail','reason':'Final artifact reservation exceeds budget'}
+    close_qualification_scope(report)
     atomic_json(job/'report.json',report);report['report']=descriptor(job/'report.json')
     store.update(job_id,status=report['status'],domain_outcome=report['domain_outcome'],result=report['report'],finished_at=time.time())
     atomic_json(job/'result.json',compact(report))
@@ -438,10 +456,19 @@ def _run_job_impl(root,job_id,blender,started=None,resume_checkpoint=None,shared
     return report
 
 def submit(request_path,root,blender,background=False,started=None,shared_budget=None,parent_cancel_id=None,reference_approval=None):
+    started=started or time.monotonic()
     from .contract import validate_request,fingerprint
-    request=validate_request(load(request_path));store=store_for(root)
+    request=validate_request(load(request_path))
     from .reference import verify_reference
     gate=verify_reference(request['params'],reference_approval)
+    # A new-scene source cage has no saved state to inspect. Its complete
+    # predictive polygon/intersection gates must pass before queue admission or
+    # any supervisor/Blender process. Saved-source edits still obtain their real
+    # guarded source state, then use the same planner gate before construction.
+    if request['params']['source']['kind']=='new_scene' and request['params']['quality'].get('stage')=='source_cage':
+        from .planner import plan_request
+        plan_request(request,reference_approval=reference_approval)
+    store=store_for(root)
     admission=fingerprint(request) if reference_approval is None else fingerprint({'request':request,'reference_approval':gate})
     record=store.submit(request['params']['request_id'],admission,metadata={'admitted_monotonic':started or time.monotonic()});job=store.job_dir(record['job_id'])
     if shared_budget is not None:shared_budget.add_root(job)
@@ -587,32 +614,56 @@ def cancel_job(store,job_id):
         return store.status(job_id)
     finally:fcntl.flock(fd,fcntl.LOCK_UN);os.close(fd)
 
-def read_only_action(action,request_path,root,blender,started):
+def read_only_action(action,request_path,root,blender,started,shared_budget=None):
     from .contract import fingerprint
     from .io import copy_verified
     from .budgets import BudgetLimits,JobBudget,tree_file_bytes
     if action=='observe':from . import observation as adapter
     elif action=='validate':from . import validation as adapter
     elif action=='topology':from . import topology as adapter
+    elif action=='subdivision.diagnose':from . import subdivision as adapter
+    elif action=='mesh.inspect':from . import source_mesh_inspection as adapter
     else:raise RuntimeFailure('UNSUPPORTED','No fixed read-only action')
     request=adapter.validate_request(load(request_path));p=request['params'];store=store_for(root)
     record=store.submit(p['request_id'],fingerprint(request),metadata={'admitted_monotonic':started,'action':action});job=store.job_dir(record['job_id'])
+    if shared_budget is not None:shared_budget.add_root(job)
     if record.get('reused'):return load(job/'result.json') if (job/'result.json').exists() else record
     fd=os.open(job/'execution.lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
     try:
         try:fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError as exc:raise RuntimeFailure('JOB_ALREADY_RUNNING','Another supervisor owns this read-only job') from exc
         if store.status(job.name)['status']!='queued':raise RuntimeFailure('JOB_NOT_QUEUED','Only queued read-only work may start')
-        return _read_only_impl(action,request,job,store,blender,started)
+        return _read_only_impl(action,request,job,store,blender,started,shared_budget=shared_budget)
     finally:fcntl.flock(fd,fcntl.LOCK_UN);os.close(fd)
 
 
-def _read_only_impl(action,request,job,store,blender,started):
+def _read_only_budget(action,params,started):
+    """Preserve legacy limits; sparse diagnosis may request 1–3 GiB sampled RSS."""
+    from .budgets import BudgetLimits,JobBudget
+    from .contract import ContractError
+    rss=1024**3
+    if 'max_tree_rss_bytes' in params:
+        rss=params['max_tree_rss_bytes']
+        sparse=(action=='subdivision.diagnose' and params.get('evaluation_profile',{}).get('mode')=='source_bound_sparse_diagnostic_v1')
+        if sparse:
+            if type(rss) is not int or not 1024**3<=rss<=3*1024**3:
+                raise ContractError('INVALID_REQUEST','Sparse source-bound diagnosis accepts an integer memory budget from 1 to 3 GiB',
+                                    '$.params.max_tree_rss_bytes')
+        elif action not in ('observe','mesh.inspect') or type(rss) is not int or not 1024**3<=rss<=4*1024**3:
+            raise ContractError('INVALID_REQUEST','Only observation and source inspection accept an integer memory budget from 1 to 4 GiB',
+                                '$.params.max_tree_rss_bytes')
+    return JobBudget(BudgetLimits(wall_seconds=params['wall_seconds'],max_tree_rss_bytes=rss,max_disk_bytes=512*1024**2),started_at=started)
+
+
+def _read_only_impl(action,request,job,store,blender,started,shared_budget=None):
     from .io import copy_verified
-    from .budgets import BudgetLimits,JobBudget,tree_file_bytes
+    from .budgets import tree_file_bytes
     p=request['params']
     atomic_json(job/'request.json',request);store.update(job.name,status='running')
-    budget=JobBudget(BudgetLimits(wall_seconds=p['wall_seconds'],max_tree_rss_bytes=1024**3,max_disk_bytes=512*1024**2),started_at=started)
+    budget=_read_only_budget(action,p,started)
+    if shared_budget is not None:
+        from .edit_review import JointBudget
+        budget=JointBudget(budget,shared_budget)
     result={'status':'failed','job_id':job.name,'action':action,'source_saved':False}
     try:
         budget.check();identity=impl_identity(blender)
@@ -636,9 +687,14 @@ def _read_only_impl(action,request,job,store,blender,started):
         result.update(status='succeeded',**data,source_original=final_source,source_observation=observation,source_guard=guard.report(),implementation=identity,metrics=budget.report())
     except Exception as exc:
         e=error_dict(exc);result.update(error=e,status='cancelled' if 'CANCEL' in e['code'] else 'timed_out' if 'TIME' in e['code'] else 'failed',metrics=budget.report())
+    if (action in ('observe','mesh.inspect') or (action=='subdivision.diagnose' and p.get('evaluation_profile',{}).get('mode')=='source_bound_sparse_diagnostic_v1')) and 'max_tree_rss_bytes' in p:
+        result['resource_policy']={'max_tree_rss_bytes':budget.limits.max_tree_rss_bytes,
+                                  'max_disk_bytes':budget.limits.max_disk_bytes,
+                                  'wall_seconds':budget.limits.wall_seconds,'cpu_threads':p['cpu_threads'],
+                                  'budget_scope':('one_read_only_subdivision_worker' if action=='subdivision.diagnose' else 'all_isolated_view_workers'),'hard_memory_enforcement':False}
     full=atomic_json(job/'report.json',result)
     if action in ('observe','topology'):
-        compact_result={k:result[k] for k in ('status','job_id','action','domain_outcome','source_original','source_saved','metrics','error') if k in result}
+        compact_result={k:result[k] for k in ('status','job_id','action','domain_outcome','source_original','source_saved','metrics','error','resource_policy') if k in result}
         compact_result.update(report=full,details_reference=full,details_omitted=True)
         if 'previews' in result:
             compact_result['previews']=[]
@@ -674,6 +730,13 @@ def parser():
         if name=='study':a.add_argument('--cases',type=Path,required=True)
         if name in ('plan','run','study'):
             a.add_argument('--reference-approval',type=Path);a.add_argument('--reference-approval-sha256')
+    edit_review=actions.add_parser('edit-review').add_subparsers(dest='review_action',required=True)
+    for name in ('plan','run','resume'):
+        edit_review.add_parser(name).add_argument('--request',type=Path,required=True)
+    subdivision=actions.add_parser('subdivision').add_subparsers(dest='subdivision_action',required=True)
+    subdivision.add_parser('diagnose').add_argument('--request',type=Path,required=True)
+    mesh=actions.add_parser('mesh').add_subparsers(dest='mesh_action',required=True)
+    mesh.add_parser('inspect').add_argument('--request',type=Path,required=True)
     for name in ('validate','observe','topology'):
         a=actions.add_parser(name);a.add_argument('--request',type=Path,required=True)
     a=actions.add_parser('inspect');a.add_argument('--file',required=True);a.add_argument('--expected-sha256',required=True)
@@ -692,6 +755,8 @@ def main(argv=None):
     started=time.monotonic()
     try:
         a=parser().parse_args(argv);root=Path(a.jobs_dir)
+        if a.command=='hardsurface' and a.action=='subdivision':a.action='subdivision.'+a.subdivision_action
+        if a.command=='hardsurface' and a.action=='mesh':a.action='mesh.'+a.mesh_action
         if a.background and not (a.command=='hardsurface' and a.action=='run'):raise RuntimeFailure('INVALID_REQUEST','--async is supported only for hardsurface run')
         if a.command=='_supervise':result=compact(run_job(root,a.job_id,a.blender,started))
         elif a.command=='job':
@@ -709,10 +774,17 @@ def main(argv=None):
             else:result=store.status(a.job_id)
         elif a.action=='describe':
             from .contract import schema
-            if a.section in ('validate','observe','topology'):
-                from . import validation,observation,topology
-                result={'validate':validation,'observe':observation,'topology':topology}[a.section].schema()
+            if a.section=='edit-review':
+                from . import edit_review
+                result=edit_review.schema()
+            elif a.section in ('validate','observe','topology','subdivision.diagnose','mesh.inspect'):
+                from . import validation,observation,topology,subdivision,source_mesh_inspection
+                result={'validate':validation,'observe':observation,'topology':topology,'subdivision.diagnose':subdivision,'mesh.inspect':source_mesh_inspection}[a.section].schema()
             else:result=schema(a.section)
+        elif a.action=='edit-review':
+            from . import edit_review
+            result=(edit_review.plan(load(a.request),a.blender) if a.review_action=='plan' else
+                    edit_review.run(a.request,root,a.blender,resume=a.review_action=='resume',started=started))
         elif a.action=='plan':
             from .planner import plan_request
             from .reference import approval_descriptor
@@ -724,7 +796,7 @@ def main(argv=None):
             from .reference import approval_descriptor
             result=study(a.request,a.cases,root,a.blender,started,reference_approval=approval_descriptor(a.reference_approval,a.reference_approval_sha256))
         elif a.action=='stage':result=stage_only(a.request,root,a.blender,started)
-        elif a.action in ('validate','observe','topology'):result=read_only_action(a.action,a.request,root,a.blender,started)
+        elif a.action in ('validate','observe','topology','subdivision.diagnose','mesh.inspect'):result=read_only_action(a.action,a.request,root,a.blender,started)
         elif a.action=='inspect':result=inspect_only(a.file,a.expected_sha256,root,a.blender,started)
         elif a.action=='resume':result=resume(root,a.job_id,a.checkpoint,a.blender,started)
         elif a.action=='report':
@@ -737,7 +809,7 @@ def main(argv=None):
                     total=len(result);result={'items':result[a.offset:a.offset+a.limit],'total':total,'next_offset':a.offset+a.limit if a.offset+a.limit<total else None}
         elif a.action=='archive':result=archive(root,a.job_id,a.destination,a.blender)
         else:raise RuntimeFailure('UNSUPPORTED',f'Action {a.action} integration is not yet qualified')
-        print(json.dumps({'ok':True,'data':result},ensure_ascii=False,allow_nan=False));return 0 if not isinstance(result,dict) or result.get('status') not in ('failed','timed_out','cancelled') else 5
+        print(json.dumps({'ok':True,'data':result},ensure_ascii=False,allow_nan=False));return 0 if not isinstance(result,dict) or result.get('status') not in ('failed','timed_out','cancelled','reconcile_required') else 5
     except Exception as exc:
         print(json.dumps({'ok':False,'error':error_dict(exc)},ensure_ascii=False,allow_nan=False));return 2
 

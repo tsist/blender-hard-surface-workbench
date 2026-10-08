@@ -1,0 +1,297 @@
+{
+  "asset_profile": {
+    "delivery_layers": [
+      "editable_master",
+      "evaluated_high"
+    ],
+    "length_unit": "mm",
+    "observation": {
+      "camera_reference": null,
+      "resolution_px": null,
+      "status": "proposed",
+      "view_ids": []
+    },
+    "route": "film_product"
+  },
+  "design": {
+    "asset_id": "panel",
+    "edge_roundover_mm": 0.7,
+    "holes": [
+      {
+        "center_mm": [
+          11.0,
+          1.0
+        ],
+        "id": "bore",
+        "kind": "circle",
+        "radius_mm": 8.5,
+        "rim": "sharp"
+      }
+    ],
+    "length_unit": "mm",
+    "outline": {
+      "center_mm": [
+        0.0,
+        0.0
+      ],
+      "corner_radius_mm": 9.0,
+      "kind": "rounded_rectangle",
+      "size_mm": [
+        96.0,
+        62.0
+      ]
+    },
+    "parent_surface": "plane",
+    "z_range_mm": [
+      0.0,
+      5.5
+    ]
+  },
+  "edit_contract": {
+    "affected_region_ids": [
+      "bore_region"
+    ],
+    "allowed_parameters": [
+      "hole.center_x_mm"
+    ],
+    "ambiguity_policy": "stop",
+    "invariants": [
+      "non_target_unchanged",
+      "outside_patch_unchanged",
+      "semantic_identity"
+    ],
+    "parameter_ranges": [
+      {
+        "maximum": 11.0,
+        "minimum": 9.0,
+        "parameter": "hole.center_x_mm"
+      }
+    ],
+    "protected_object_ids": [
+      "non_target"
+    ],
+    "selection_invalidation": "invalidate_dependents",
+    "target_feature_ids": [
+      "bore"
+    ]
+  },
+  "evaluation": {
+    "blender_version": "5.2.2",
+    "levels": [
+      1,
+      2,
+      3
+    ],
+    "method": "CATMULL_CLARK",
+    "settings_status": "proposed"
+  },
+  "execution_mode": "dry_run",
+  "identity": {
+    "contract_version": "1.0.0",
+    "evidence_version": "1.0.0",
+    "implementation_id": "host_contract_fixture_only",
+    "implementation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "operation_version": "0.1.0",
+    "project_id": "neutral_fixture",
+    "request_id": "fixture.structure.plan"
+  },
+  "operation": "structure.plan",
+  "output": {
+    "candidate_file": "/fixtures/output/new-candidate.blend",
+    "evidence_directory": "/fixtures/output/evidence",
+    "overwrite": false,
+    "publication": "candidate_only"
+  },
+  "quality_and_budget": {
+    "budget_limits": {
+      "control_faces": 20000,
+      "cpu_threads": 1,
+      "evaluated_faces": 1280000,
+      "peak_ram_bytes": 1073741824,
+      "wall_seconds": 300.0
+    },
+    "estimates": {
+      "basis": "Synthetic arithmetic test input, not a measured mesh/resource record",
+      "control_faces": 20000,
+      "peak_ram_bytes": null,
+      "status": "unmeasured_estimate",
+      "wall_seconds": null
+    },
+    "required_evidence": [
+      "source_mesh",
+      "evaluated_mesh",
+      "dimensions",
+      "visual",
+      "edit",
+      "reopen",
+      "holdout"
+    ],
+    "tolerances": {
+      "explicit_arc_chord": {
+        "basis": "Unresolved neutral contract fixture; no production tolerance proposed",
+        "status": "proposed",
+        "unit": "mm",
+        "value": null
+      },
+      "nominal_dimensions": {
+        "basis": "Unresolved neutral contract fixture; no production tolerance proposed",
+        "status": "proposed",
+        "unit": "mm",
+        "value": null
+      },
+      "screen_observation": {
+        "basis": "Unresolved neutral contract fixture; no production tolerance proposed",
+        "status": "proposed",
+        "unit": "px",
+        "value": null
+      },
+      "subd_shape": {
+        "basis": "Unresolved neutral contract fixture; no production tolerance proposed",
+        "status": "proposed",
+        "unit": "mm",
+        "value": null
+      }
+    }
+  },
+  "reference_contract": {
+    "approval_evidence": null,
+    "artifacts": [
+      {
+        "artifact": {
+          "bytes": 100,
+          "file": "/fixtures/reference/appearance.json",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "id": "ref.appearance",
+        "role": "appearance"
+      },
+      {
+        "artifact": {
+          "bytes": 100,
+          "file": "/fixtures/reference/dimensions.json",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "id": "ref.dimensions",
+        "role": "dimensions"
+      },
+      {
+        "artifact": {
+          "bytes": 100,
+          "file": "/fixtures/reference/detail.json",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "id": "ref.detail",
+        "role": "detail"
+      },
+      {
+        "artifact": {
+          "bytes": 100,
+          "file": "/fixtures/reference/checklist.json",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "id": "ref.checklist",
+        "role": "checklist"
+      }
+    ],
+    "conflicts": [],
+    "package_id": "neutral.proposal",
+    "package_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "state": "proposed",
+    "version": "fixture-only-v1"
+  },
+  "requested_usage": "development",
+  "schema_version": "structure-plan/1.0",
+  "source": {
+    "kind": "saved_snapshot",
+    "object_ids": [
+      "panel_object",
+      "non_target"
+    ],
+    "save_state": "saved",
+    "snapshot": {
+      "bytes": 100,
+      "file": "/fixtures/input/synthetic_source.blend",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "structure": {
+    "boundary_ports": [
+      {
+        "allowed_transforms": [
+          "identity"
+        ],
+        "id": "bore_top_port",
+        "loop_id": "bore_top",
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "origin_mm": [
+          11.0,
+          1.0,
+          5.5
+        ],
+        "region_id": "bore_region",
+        "seam_policy": "exact_ordered_match"
+      }
+    ],
+    "declaration_status": "unverified",
+    "interfaces": [],
+    "loops": [
+      {
+        "closed": true,
+        "expected_vertex_count": 24,
+        "id": "bore_top",
+        "orientation": "ccw",
+        "region_id": "bore_region",
+        "role": "bore_rim_top"
+      },
+      {
+        "closed": true,
+        "expected_vertex_count": 24,
+        "id": "bore_bottom",
+        "orientation": "cw",
+        "region_id": "bore_region",
+        "role": "bore_rim_bottom"
+      }
+    ],
+    "regions": [
+      {
+        "feature_id": "bore",
+        "id": "bore_region",
+        "loop_ids": [
+          "bore_top",
+          "bore_bottom"
+        ],
+        "role": "bore_wall",
+        "surface_id": "wall"
+      }
+    ]
+  },
+  "topology": {
+    "hole_control_count": 24,
+    "local_patch_bounds_mm": [
+      -7.0,
+      -15.0,
+      25.0,
+      17.0
+    ],
+    "master_face_policy": "quad_preferred_zero_ngons",
+    "outline_control_count": 48,
+    "strategy": "subd_control_cage",
+    "triangle_exceptions": []
+  },
+  "work_units": [
+    {
+      "checkpoint": "none_read_only",
+      "depends_on": [],
+      "id": "plan",
+      "input_ports": [
+        "bore_top_port"
+      ],
+      "operation": "structure.plan",
+      "output_ports": []
+    }
+  ]
+}

@@ -99,7 +99,7 @@ def compact_step_records(records):
 def compact_checkpoint_record(record):
     """Project the fixed checkpoint envelope; bulky snapshots live in sidecar."""
     fields=('file','sha256','bytes','candidate','producer_identity','state',
-            'design_state_sha256','completed_step_keys','sidecar','design_state','report','quad_quality')
+            'design_state_sha256','completed_step_keys','sidecar','design_state','report','quad_quality','structure_identity')
     return {key:record[key] for key in fields if key in record}
 
 def checkpoint_evidence_artifacts(report,*,root=None):
@@ -108,6 +108,7 @@ def checkpoint_evidence_artifacts(report,*,root=None):
     if not isinstance(checkpoints,list) or len(checkpoints)>128:
         raise RuntimeFailure('EVIDENCE_REFERENCE_INVALID','Checkpoint evidence list must be bounded')
     artifacts={}
+    structural_records=[]
     for index,checkpoint in enumerate(checkpoints):
         if not isinstance(checkpoint,dict) or 'scene_snapshot' in checkpoint:
             raise RuntimeFailure('EVIDENCE_REFERENCE_INVALID','Checkpoint must contain compact sidecar references')
@@ -125,11 +126,13 @@ def checkpoint_evidence_artifacts(report,*,root=None):
                 raise RuntimeFailure('EVIDENCE_REFERENCE_MISMATCH','Checkpoint sidecar differs from the exact stop result')
         artifacts[f'checkpoint_sidecar_{index:03d}']=checkpoint['sidecar']
         artifacts[f'checkpoint_report_{index:03d}']=checkpoint['report']
+        if checkpoint.get('structure_identity') is not None:
+            structural_records.append((checkpoint['structure_identity'],side['scene_snapshot'].get('structure_registry')))
     quality_records=[]
     for checkpoint in checkpoints:
         if checkpoint.get('quad_quality') is not None:quality_records.append(checkpoint['quad_quality'])
     if report.get('checks',{}).get('quad_topology') is not None:quality_records.append(report['checks']['quad_topology'])
-    seen=set()
+    seen=set();control_quality={}
     for quality in quality_records:
         if quality.get('status')!='pass' or not isinstance(quality.get('evidence'),list):
             raise RuntimeFailure('QUAD_EVIDENCE_INVALID','Mandatory quad check lacks complete passed evidence')
@@ -137,8 +140,48 @@ def checkpoint_evidence_artifacts(report,*,root=None):
             detail=item.get('details');value=read_json_reference(detail,root=root)
             if item.get('passed') is not True or value.get('passed') is not True or value.get('mesh_state')!=item.get('mesh_state'):
                 raise RuntimeFailure('QUAD_EVIDENCE_INVALID','Actual quad report does not support gate summary')
+            if item.get('mesh_state')=='control':control_quality[item.get('object_id')]=value
             if detail['file'] in seen:continue
             seen.add(detail['file']);artifacts[f'quad_quality_{len(seen):03d}']=detail
+    if report.get('checks',{}).get('structure_identity') is not None:
+        structural_records.append((report['checks']['structure_identity'],report.get('scene_snapshot',{}).get('structure_registry')))
+    structural_seen=set();native_reports={}
+    from .identity import validate_structure_registry
+    for record,registry in structural_records:
+        try:registry=validate_structure_registry(registry)
+        except Exception as exc:raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','External saved registry is missing or invalid') from exc
+        if record.get('status')!='pass' or not isinstance(record.get('evidence'),list) or not record['evidence']:
+            raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Structure identity gate lacks actual evidence')
+        for item in record['evidence']:
+            detail=item.get('details');value=read_json_reference(detail,root=root)
+            if (item.get('status')!='pass' or value.get('status')!='pass' or not isinstance(value.get('native_extraction'),dict) or value['native_extraction'].get('status')!='pass'):
+                raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Native structure evidence does not support gate summary')
+            if value.get('binding',{}).get('object_id')!=item.get('object_id') or value.get('binding',{}).get('data_id')!=item.get('data_id'):
+                raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Structure evidence object/data binding differs')
+            binding=value.get('binding',{})
+            if registry.get(item.get('object_id'))!=binding or value.get('identity_binding_status')!='bound':
+                raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Actual structure evidence differs from external saved registry')
+            kernel=value.get('kernel_report',{})
+            if kernel.get('status')!='pass' or any(kernel.get(k)!=binding.get(k) for k in ('geometry_signature','topology_signature','attribute_signature','structure_signature')):
+                raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Kernel signatures do not support the native binding')
+            native_reports[item.get('object_id')]=value
+            if detail['file'] in structural_seen:continue
+            structural_seen.add(detail['file']);artifacts[f'structure_identity_{len(structural_seen):03d}']=detail
+    # A final child checkpoint must freeze edit proofs before a parent adopts them.
+    # Native structure quality alone does not bind impact or before/after lineage.
+    steps = report.get('steps', [])
+    if not isinstance(steps, list) or len(steps) > 4096:
+        raise RuntimeFailure('EVIDENCE_REFERENCE_INVALID','Step evidence list must be bounded')
+    for index, step in enumerate(steps):
+        edit = step.get('evidence', {}).get('structure_edit')
+        if edit is None: continue
+        detail = edit.get('evidence'); value = read_json_reference(detail, root=root)
+        if edit.get('status') != 'pass' or value.get('status') != 'pass':
+            raise RuntimeFailure('STRUCTURE_EVIDENCE_INVALID','Native edit proof must pass before checkpoint')
+        artifacts[f'structure_edit_{index:04d}'] = detail
+    if report.get('source_mesh_inspection') is not None:
+        from .source_inspection_evidence import verify_construction_inspection
+        artifacts.update(verify_construction_inspection(report,root=root,native_reports=native_reports,control_quality=control_quality))
     return artifacts
 
 def read_json(path,*,max_bytes=8*1024*1024,_reference=None):

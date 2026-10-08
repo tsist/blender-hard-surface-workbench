@@ -6,6 +6,20 @@ on:
 permissions:
   contents: read
 jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Host contracts and numerical fixtures
+        run: python -B scripts/run_host_tests.py --shard-count 4 --shard-index ${{ matrix.shard }}
   public-source:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -14,8 +28,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Host contracts and numerical fixtures
-        run: python -B -m unittest discover -s tests -p 'test_*.py' -v
       - name: First static package build
         run: python -B scripts/build_distribution.py --output '${{ runner.temp }}/hard-surface-first'
       - name: Independent static package build

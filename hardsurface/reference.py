@@ -11,7 +11,7 @@ def fail(message,code='REFERENCE_APPROVAL_REQUIRED'):
 
 def verified_json(value):
     before=verify_descriptor(value)
-    content=read_json(value['file'],max_bytes=1024*1024)
+    content=read_json(value['file'],max_bytes=1024*1024,_reference=before)
     if verify_descriptor(value)!=before:fail('Reference evidence changed while reading','REFERENCE_CONFLICT')
     return content,before
 

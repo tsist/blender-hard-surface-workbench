@@ -576,6 +576,34 @@
       "maxLength": 4096,
       "type": "string"
     },
+    "qualification_scope": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluated_shape": {
+          "const": "not_run"
+        },
+        "production_qualification": {
+          "const": "not_run"
+        },
+        "source_structure": {
+          "const": "pass"
+        },
+        "stage": {
+          "const": "source_cage"
+        },
+        "surface_observation": {
+          "const": "not_run"
+        }
+      },
+      "required": [
+        "stage",
+        "source_structure",
+        "evaluated_shape",
+        "surface_observation",
+        "production_qualification"
+      ],
+      "type": "object"
+    },
     "report": {
       "additionalProperties": false,
       "properties": {

@@ -154,9 +154,15 @@ class BoundaryRegressionTests(unittest.TestCase):
         if not root.exists(): return
         for path in root.glob('*.schema.json'):
             section=path.name.removesuffix('.schema.json')
-            if section in ('hardsurface-validate','hardsurface-observe','hardsurface-topology'):
-                from hardsurface import validation,observation,topology
-                authority={'hardsurface-validate':validation,'hardsurface-observe':observation,'hardsurface-topology':topology}[section].schema()
+            if section == 'structure-plan':
+                from hardsurface import structure_contract
+                authority=structure_contract.schema()
+            elif section in ('hardsurface-validate','hardsurface-observe','hardsurface-topology','hardsurface-subdivision-diagnose','hardsurface-mesh-inspect'):
+                from hardsurface import validation,observation,topology,subdivision,source_mesh_inspection
+                authority={'hardsurface-validate':validation,'hardsurface-observe':observation,'hardsurface-topology':topology,'hardsurface-subdivision-diagnose':subdivision,'hardsurface-mesh-inspect':source_mesh_inspection}[section].schema()
+            elif section == 'hardsurface-edit-review':
+                from hardsurface import edit_review
+                authority=edit_review.schema()
             else:authority=c.schema(section)
             self.assertEqual(json.loads(path.read_text()),authority)
 

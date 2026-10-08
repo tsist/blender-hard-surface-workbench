@@ -158,15 +158,27 @@ def main():
         if payload['action'] in ('run','build'):
             dependency_audit()
             result=execute_request(payload['request'],job_dir=job,solved_sketches=payload.get('solutions',payload.get('solved_sketches')),plan=payload.get('plan'),start_after_step_keys=payload.get('start_after_step_keys'),candidate_path=payload.get('candidate_path'),stop_after_step_key=payload.get('stop_after_step_key'),base_design_state=payload.get('base_design_state'),reference_approval=payload.get('reference_approval'))
-        elif payload['action'] in ('validate','observe','topology'):
+            if payload['request']['params']['quality'].get('stage','full')=='source_cage' and not result.get('partial_checkpoint'):
+                from hardsurface.source_mesh_inspection_native import execute_construct_inspection
+                result['source_mesh_inspection']=execute_construct_inspection(payload['request'],result['candidate'],job)
+                if result['source_mesh_inspection']['acceptance']['polygon_quality']!='pass':
+                    raise CoreError('SOURCE_INSPECTION_QUALITY','Actual source inspection cannot confirm the source-stage polygon gate')
+                result['qualification_scope']={'stage':'source_cage','source_structure':'pass','evaluated_shape':'not_run','surface_observation':'not_run','production_qualification':'not_run'}
+        elif payload['action'] in ('validate','observe','topology','subdivision.diagnose','mesh.inspect'):
             resources=dependency_audit()
             allowed={str(Path(d['file']).resolve()):d['sha256'] for d in payload.get('guarded_resources',[])}
             if any(allowed.get(str(Path(d['source']).resolve()))!=d['sha256'] for d in resources):raise CoreError('DEPENDENCY_UNSUPPORTED','Read-only diagnostics require every external resource to be pinned and guarded by the host')
             if payload['action']=='validate':
                 from hardsurface.validation import execute
                 result=execute(payload['request'],job_dir=job)
+            elif payload['action']=='subdivision.diagnose':
+                from hardsurface.core import diagnose_subdivision
+                result=diagnose_subdivision(payload['request'],job)
             elif payload['action']=='topology':
                 from hardsurface.topology import execute
+                result=execute(payload['request'],job)
+            elif payload['action']=='mesh.inspect':
+                from hardsurface.source_mesh_inspection_native import execute
                 result=execute(payload['request'],job)
             else:
                 from hardsurface.observation import execute

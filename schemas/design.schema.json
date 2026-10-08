@@ -2094,6 +2094,150 @@
                                 },
                                 {
                                   "additionalProperties": false,
+                                  "allOf": [
+                                    {
+                                      "else": {
+                                        "properties": {
+                                          "edge_bevel": {
+                                            "oneOf": [
+                                              {
+                                                "maximum": 1,
+                                                "minimum": 0,
+                                                "type": "number"
+                                              },
+                                              {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "id": {
+                                                    "maxLength": 96,
+                                                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                    "type": "string"
+                                                  },
+                                                  "kind": {
+                                                    "const": "dimension_ref"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "id"
+                                                ],
+                                                "type": "object"
+                                              }
+                                            ]
+                                          },
+                                          "subdivision_cage": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "hole_segments": {
+                                                "default": 24,
+                                                "maximum": 24,
+                                                "minimum": 24,
+                                                "type": "integer"
+                                              },
+                                              "method": {
+                                                "default": "CATMULL_CLARK",
+                                                "enum": [
+                                                  "CATMULL_CLARK"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "preview_levels": {
+                                                "default": 2,
+                                                "maximum": 3,
+                                                "minimum": 0,
+                                                "type": "integer"
+                                              }
+                                            },
+                                            "required": [],
+                                            "type": "object"
+                                          }
+                                        }
+                                      },
+                                      "if": {
+                                        "properties": {
+                                          "topology_strategy": {
+                                            "enum": [
+                                              "subd_control_cage",
+                                              "sparse_control_cage"
+                                            ],
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "topology_strategy"
+                                        ]
+                                      },
+                                      "then": {
+                                        "properties": {
+                                          "edge_bevel": {
+                                            "oneOf": [
+                                              {
+                                                "maximum": 2,
+                                                "minimum": 0,
+                                                "type": "number"
+                                              },
+                                              {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "id": {
+                                                    "maxLength": 96,
+                                                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                    "type": "string"
+                                                  },
+                                                  "kind": {
+                                                    "const": "dimension_ref"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "id"
+                                                ],
+                                                "type": "object"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "if": {
+                                        "properties": {
+                                          "sparse_cage": {
+                                            "required": [
+                                              "corner_columns"
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "sparse_cage"
+                                        ]
+                                      },
+                                      "then": {
+                                        "properties": {
+                                          "topology_strategy": {
+                                            "const": "sparse_control_cage"
+                                          }
+                                        },
+                                        "required": [
+                                          "topology_strategy"
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "if": {
+                                    "properties": {
+                                      "topology_strategy": {
+                                        "enum": [
+                                          "local_patch_blocks",
+                                          "subd_control_cage"
+                                        ],
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "topology_strategy"
+                                    ]
+                                  },
                                   "properties": {
                                     "center": {
                                       "default": [
@@ -2175,9 +2319,40 @@
                                     },
                                     "edge_bevel": {
                                       "default": 0.0,
-                                      "maximum": 1,
-                                      "minimum": 0,
-                                      "type": "number"
+                                      "oneOf": [
+                                        {
+                                          "maximum": 2,
+                                          "minimum": 0,
+                                          "type": "number"
+                                        },
+                                        {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "id": {
+                                              "maxLength": 96,
+                                              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                              "type": "string"
+                                            },
+                                            "kind": {
+                                              "const": "dimension_ref"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "id"
+                                          ],
+                                          "type": "object"
+                                        }
+                                      ]
+                                    },
+                                    "edit_datum": {
+                                      "description": "Explicit semantic-rebuild thickness datum. Omitted means no thickness edit; this field never authorizes changing approved design.",
+                                      "enum": [
+                                        "not_requested",
+                                        "fixed_bottom",
+                                        "fixed_midplane"
+                                      ],
+                                      "type": "string"
                                     },
                                     "holes": {
                                       "default": [],
@@ -2525,6 +2700,37 @@
                                       "minItems": 0,
                                       "type": "array"
                                     },
+                                    "local_patch_bounds": {
+                                      "description": "Fixed caller-owned [xmin,ymin,xmax,ymax] in mm, required by local_patch_blocks; preserve across hole-position edits.",
+                                      "items": {
+                                        "oneOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "id": {
+                                                "maxLength": 96,
+                                                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                "type": "string"
+                                              },
+                                              "kind": {
+                                                "const": "dimension_ref"
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "id"
+                                            ],
+                                            "type": "object"
+                                          }
+                                        ]
+                                      },
+                                      "maxItems": 4,
+                                      "minItems": 4,
+                                      "type": "array"
+                                    },
                                     "max_segments": {
                                       "default": 512,
                                       "maximum": 512,
@@ -2565,11 +2771,265 @@
                                       "minItems": 2,
                                       "type": "array"
                                     },
+                                    "sparse_cage": {
+                                      "additionalProperties": false,
+                                      "allOf": [
+                                        {
+                                          "if": {
+                                            "required": [
+                                              "corner_columns"
+                                            ]
+                                          },
+                                          "then": {
+                                            "properties": {
+                                              "profile_arc_segments": {
+                                                "maximum": 4,
+                                                "minimum": 4,
+                                                "type": "integer"
+                                              }
+                                            },
+                                            "required": [
+                                              "layout",
+                                              "insertion_policy"
+                                            ]
+                                          }
+                                        }
+                                      ],
+                                      "else": {
+                                        "properties": {
+                                          "insertions": {
+                                            "items": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "corridor": {
+                                                  "enum": [
+                                                    "east",
+                                                    "south"
+                                                  ],
+                                                  "type": "string"
+                                                },
+                                                "fraction": {
+                                                  "maximum": 0.8,
+                                                  "minimum": 0.2,
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "required": [
+                                                "corridor",
+                                                "fraction"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "maxItems": 1,
+                                            "minItems": 0,
+                                            "type": "array"
+                                          }
+                                        }
+                                      },
+                                      "if": {
+                                        "properties": {
+                                          "insertion_policy": {
+                                            "const": "axis_plane_v1"
+                                          }
+                                        },
+                                        "required": [
+                                          "insertion_policy"
+                                        ]
+                                      },
+                                      "properties": {
+                                        "collar_radius_factor": {
+                                          "exclusiveMinimum": 1,
+                                          "type": "number"
+                                        },
+                                        "corner_columns": {
+                                          "additionalProperties": false,
+                                          "description": "Explicit midpoint corner-column constructor; requires a fixed-frame layout and axis_plane_v1. No fitting or optimization controls are accepted.",
+                                          "properties": {
+                                            "schema": {
+                                              "const": "corner-columns-midpoint/1.0"
+                                            }
+                                          },
+                                          "required": [
+                                            "schema"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "hole_cage_radius_factor": {
+                                          "exclusiveMinimum": 0,
+                                          "type": "number"
+                                        },
+                                        "hole_planar_support": {
+                                          "type": "boolean"
+                                        },
+                                        "hole_segments": {
+                                          "maximum": 128,
+                                          "minimum": 4,
+                                          "type": "integer"
+                                        },
+                                        "insertion_policy": {
+                                          "description": "Explicit bounded whole-body axis-plane insertion policy; requires a frozen fixed-frame layout and allows at most two append-only insertion declarations.",
+                                          "enum": [
+                                            "axis_plane_v1"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "insertions": {
+                                          "items": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "corridor": {
+                                                "enum": [
+                                                  "east",
+                                                  "south"
+                                                ],
+                                                "type": "string"
+                                              },
+                                              "fraction": {
+                                                "maximum": 0.8,
+                                                "minimum": 0.2,
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "corridor",
+                                              "fraction"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "maxItems": 2,
+                                          "minItems": 0,
+                                          "type": "array"
+                                        },
+                                        "layout": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "corner_guard_mm": {
+                                              "description": "Frozen spacing from core corner to the adjacent macrogrid guard slot.",
+                                              "exclusiveMinimum": 0,
+                                              "type": "number"
+                                            },
+                                            "feature_frame_mm": {
+                                              "description": "Frozen local-mm collar frame [xmin,ymin,xmax,ymax]; hole edits do not move this frame or the macrogrid.",
+                                              "items": {
+                                                "type": "number"
+                                              },
+                                              "maxItems": 4,
+                                              "minItems": 4,
+                                              "type": "array"
+                                            },
+                                            "schema": {
+                                              "enum": [
+                                                "fixed-frame-axis-aligned/1.0",
+                                                "fixed-frame-axis-aligned/1.1"
+                                              ],
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "schema",
+                                            "feature_frame_mm",
+                                            "corner_guard_mm"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "outer_segments": {
+                                          "maximum": 256,
+                                          "minimum": 8,
+                                          "type": "integer"
+                                        },
+                                        "outer_support_fraction": {
+                                          "exclusiveMaximum": 1,
+                                          "exclusiveMinimum": 0,
+                                          "type": "number"
+                                        },
+                                        "preview_levels": {
+                                          "maximum": 3,
+                                          "minimum": 0,
+                                          "type": "integer"
+                                        },
+                                        "profile_arc_segments": {
+                                          "maximum": 8,
+                                          "minimum": 2,
+                                          "type": "integer"
+                                        },
+                                        "wall_support_fraction": {
+                                          "exclusiveMaximum": 1,
+                                          "exclusiveMinimum": 0,
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [],
+                                      "then": {
+                                        "required": [
+                                          "layout"
+                                        ]
+                                      },
+                                      "type": "object"
+                                    },
+                                    "subdivision_cage": {
+                                      "additionalProperties": false,
+                                      "if": {
+                                        "required": [
+                                          "outer_join_policy"
+                                        ]
+                                      },
+                                      "properties": {
+                                        "bore_support_width": {
+                                          "exclusiveMinimum": 0,
+                                          "type": "number"
+                                        },
+                                        "hole_segments": {
+                                          "default": 24,
+                                          "maximum": 24,
+                                          "minimum": 24,
+                                          "type": "integer"
+                                        },
+                                        "method": {
+                                          "default": "CATMULL_CLARK",
+                                          "enum": [
+                                            "CATMULL_CLARK"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "outer_join_policy": {
+                                          "enum": [
+                                            "joined_arc_v1",
+                                            "joined_arc_v2"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "preview_levels": {
+                                          "default": 2,
+                                          "maximum": 3,
+                                          "minimum": 0,
+                                          "type": "integer"
+                                        }
+                                      },
+                                      "required": [],
+                                      "then": {
+                                        "required": [
+                                          "bore_support_width"
+                                        ]
+                                      },
+                                      "type": "object"
+                                    },
                                     "target_edge_length": {
                                       "default": 4.0,
                                       "exclusiveMinimum": 0,
                                       "maximum": 10,
                                       "type": "number"
+                                    },
+                                    "topology_strategy": {
+                                      "default": "tiled",
+                                      "description": "Legacy routes remain explicit compatibility paths. sparse_annulus target_edge_length controls straight-outline and wall-height sampling; radial spans use bounded minimal angle/aspect-qualified layouts. local_patch_blocks keeps its explicit fixed local_patch_bounds frame. sparse_control_cage is the versioned low-density single-hole closed-body route; source-cage review is separate from evaluated shape qualification.",
+                                      "enum": [
+                                        "tiled",
+                                        "sparse_annulus",
+                                        "local_patch_blocks",
+                                        "subd_control_cage",
+                                        "sparse_control_cage"
+                                      ],
+                                      "type": "string"
                                     },
                                     "z_max": {
                                       "oneOf": [
@@ -2630,6 +3090,11 @@
                                     "z_min",
                                     "z_max"
                                   ],
+                                  "then": {
+                                    "required": [
+                                      "local_patch_bounds"
+                                    ]
+                                  },
                                   "type": "object"
                                 },
                                 {
@@ -9121,6 +9586,150 @@
                                     },
                                     {
                                       "additionalProperties": false,
+                                      "allOf": [
+                                        {
+                                          "else": {
+                                            "properties": {
+                                              "edge_bevel": {
+                                                "oneOf": [
+                                                  {
+                                                    "maximum": 1,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                      "id": {
+                                                        "maxLength": 96,
+                                                        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                        "type": "string"
+                                                      },
+                                                      "kind": {
+                                                        "const": "dimension_ref"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "kind",
+                                                      "id"
+                                                    ],
+                                                    "type": "object"
+                                                  }
+                                                ]
+                                              },
+                                              "subdivision_cage": {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "hole_segments": {
+                                                    "default": 24,
+                                                    "maximum": 24,
+                                                    "minimum": 24,
+                                                    "type": "integer"
+                                                  },
+                                                  "method": {
+                                                    "default": "CATMULL_CLARK",
+                                                    "enum": [
+                                                      "CATMULL_CLARK"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "preview_levels": {
+                                                    "default": 2,
+                                                    "maximum": 3,
+                                                    "minimum": 0,
+                                                    "type": "integer"
+                                                  }
+                                                },
+                                                "required": [],
+                                                "type": "object"
+                                              }
+                                            }
+                                          },
+                                          "if": {
+                                            "properties": {
+                                              "topology_strategy": {
+                                                "enum": [
+                                                  "subd_control_cage",
+                                                  "sparse_control_cage"
+                                                ],
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "topology_strategy"
+                                            ]
+                                          },
+                                          "then": {
+                                            "properties": {
+                                              "edge_bevel": {
+                                                "oneOf": [
+                                                  {
+                                                    "maximum": 2,
+                                                    "minimum": 0,
+                                                    "type": "number"
+                                                  },
+                                                  {
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                      "id": {
+                                                        "maxLength": 96,
+                                                        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                        "type": "string"
+                                                      },
+                                                      "kind": {
+                                                        "const": "dimension_ref"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "kind",
+                                                      "id"
+                                                    ],
+                                                    "type": "object"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "if": {
+                                            "properties": {
+                                              "sparse_cage": {
+                                                "required": [
+                                                  "corner_columns"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "sparse_cage"
+                                            ]
+                                          },
+                                          "then": {
+                                            "properties": {
+                                              "topology_strategy": {
+                                                "const": "sparse_control_cage"
+                                              }
+                                            },
+                                            "required": [
+                                              "topology_strategy"
+                                            ]
+                                          }
+                                        }
+                                      ],
+                                      "if": {
+                                        "properties": {
+                                          "topology_strategy": {
+                                            "enum": [
+                                              "local_patch_blocks",
+                                              "subd_control_cage"
+                                            ],
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "topology_strategy"
+                                        ]
+                                      },
                                       "properties": {
                                         "center": {
                                           "default": [
@@ -9202,9 +9811,40 @@
                                         },
                                         "edge_bevel": {
                                           "default": 0.0,
-                                          "maximum": 1,
-                                          "minimum": 0,
-                                          "type": "number"
+                                          "oneOf": [
+                                            {
+                                              "maximum": 2,
+                                              "minimum": 0,
+                                              "type": "number"
+                                            },
+                                            {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "id": {
+                                                  "maxLength": 96,
+                                                  "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "const": "dimension_ref"
+                                                }
+                                              },
+                                              "required": [
+                                                "kind",
+                                                "id"
+                                              ],
+                                              "type": "object"
+                                            }
+                                          ]
+                                        },
+                                        "edit_datum": {
+                                          "description": "Explicit semantic-rebuild thickness datum. Omitted means no thickness edit; this field never authorizes changing approved design.",
+                                          "enum": [
+                                            "not_requested",
+                                            "fixed_bottom",
+                                            "fixed_midplane"
+                                          ],
+                                          "type": "string"
                                         },
                                         "holes": {
                                           "default": [],
@@ -9552,6 +10192,37 @@
                                           "minItems": 0,
                                           "type": "array"
                                         },
+                                        "local_patch_bounds": {
+                                          "description": "Fixed caller-owned [xmin,ymin,xmax,ymax] in mm, required by local_patch_blocks; preserve across hole-position edits.",
+                                          "items": {
+                                            "oneOf": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "id": {
+                                                    "maxLength": 96,
+                                                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                                                    "type": "string"
+                                                  },
+                                                  "kind": {
+                                                    "const": "dimension_ref"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "id"
+                                                ],
+                                                "type": "object"
+                                              }
+                                            ]
+                                          },
+                                          "maxItems": 4,
+                                          "minItems": 4,
+                                          "type": "array"
+                                        },
                                         "max_segments": {
                                           "default": 512,
                                           "maximum": 512,
@@ -9592,11 +10263,265 @@
                                           "minItems": 2,
                                           "type": "array"
                                         },
+                                        "sparse_cage": {
+                                          "additionalProperties": false,
+                                          "allOf": [
+                                            {
+                                              "if": {
+                                                "required": [
+                                                  "corner_columns"
+                                                ]
+                                              },
+                                              "then": {
+                                                "properties": {
+                                                  "profile_arc_segments": {
+                                                    "maximum": 4,
+                                                    "minimum": 4,
+                                                    "type": "integer"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "layout",
+                                                  "insertion_policy"
+                                                ]
+                                              }
+                                            }
+                                          ],
+                                          "else": {
+                                            "properties": {
+                                              "insertions": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "corridor": {
+                                                      "enum": [
+                                                        "east",
+                                                        "south"
+                                                      ],
+                                                      "type": "string"
+                                                    },
+                                                    "fraction": {
+                                                      "maximum": 0.8,
+                                                      "minimum": 0.2,
+                                                      "type": "number"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "corridor",
+                                                    "fraction"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "maxItems": 1,
+                                                "minItems": 0,
+                                                "type": "array"
+                                              }
+                                            }
+                                          },
+                                          "if": {
+                                            "properties": {
+                                              "insertion_policy": {
+                                                "const": "axis_plane_v1"
+                                              }
+                                            },
+                                            "required": [
+                                              "insertion_policy"
+                                            ]
+                                          },
+                                          "properties": {
+                                            "collar_radius_factor": {
+                                              "exclusiveMinimum": 1,
+                                              "type": "number"
+                                            },
+                                            "corner_columns": {
+                                              "additionalProperties": false,
+                                              "description": "Explicit midpoint corner-column constructor; requires a fixed-frame layout and axis_plane_v1. No fitting or optimization controls are accepted.",
+                                              "properties": {
+                                                "schema": {
+                                                  "const": "corner-columns-midpoint/1.0"
+                                                }
+                                              },
+                                              "required": [
+                                                "schema"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "hole_cage_radius_factor": {
+                                              "exclusiveMinimum": 0,
+                                              "type": "number"
+                                            },
+                                            "hole_planar_support": {
+                                              "type": "boolean"
+                                            },
+                                            "hole_segments": {
+                                              "maximum": 128,
+                                              "minimum": 4,
+                                              "type": "integer"
+                                            },
+                                            "insertion_policy": {
+                                              "description": "Explicit bounded whole-body axis-plane insertion policy; requires a frozen fixed-frame layout and allows at most two append-only insertion declarations.",
+                                              "enum": [
+                                                "axis_plane_v1"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            "insertions": {
+                                              "items": {
+                                                "additionalProperties": false,
+                                                "properties": {
+                                                  "corridor": {
+                                                    "enum": [
+                                                      "east",
+                                                      "south"
+                                                    ],
+                                                    "type": "string"
+                                                  },
+                                                  "fraction": {
+                                                    "maximum": 0.8,
+                                                    "minimum": 0.2,
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "corridor",
+                                                  "fraction"
+                                                ],
+                                                "type": "object"
+                                              },
+                                              "maxItems": 2,
+                                              "minItems": 0,
+                                              "type": "array"
+                                            },
+                                            "layout": {
+                                              "additionalProperties": false,
+                                              "properties": {
+                                                "corner_guard_mm": {
+                                                  "description": "Frozen spacing from core corner to the adjacent macrogrid guard slot.",
+                                                  "exclusiveMinimum": 0,
+                                                  "type": "number"
+                                                },
+                                                "feature_frame_mm": {
+                                                  "description": "Frozen local-mm collar frame [xmin,ymin,xmax,ymax]; hole edits do not move this frame or the macrogrid.",
+                                                  "items": {
+                                                    "type": "number"
+                                                  },
+                                                  "maxItems": 4,
+                                                  "minItems": 4,
+                                                  "type": "array"
+                                                },
+                                                "schema": {
+                                                  "enum": [
+                                                    "fixed-frame-axis-aligned/1.0",
+                                                    "fixed-frame-axis-aligned/1.1"
+                                                  ],
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "schema",
+                                                "feature_frame_mm",
+                                                "corner_guard_mm"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "outer_segments": {
+                                              "maximum": 256,
+                                              "minimum": 8,
+                                              "type": "integer"
+                                            },
+                                            "outer_support_fraction": {
+                                              "exclusiveMaximum": 1,
+                                              "exclusiveMinimum": 0,
+                                              "type": "number"
+                                            },
+                                            "preview_levels": {
+                                              "maximum": 3,
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            },
+                                            "profile_arc_segments": {
+                                              "maximum": 8,
+                                              "minimum": 2,
+                                              "type": "integer"
+                                            },
+                                            "wall_support_fraction": {
+                                              "exclusiveMaximum": 1,
+                                              "exclusiveMinimum": 0,
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [],
+                                          "then": {
+                                            "required": [
+                                              "layout"
+                                            ]
+                                          },
+                                          "type": "object"
+                                        },
+                                        "subdivision_cage": {
+                                          "additionalProperties": false,
+                                          "if": {
+                                            "required": [
+                                              "outer_join_policy"
+                                            ]
+                                          },
+                                          "properties": {
+                                            "bore_support_width": {
+                                              "exclusiveMinimum": 0,
+                                              "type": "number"
+                                            },
+                                            "hole_segments": {
+                                              "default": 24,
+                                              "maximum": 24,
+                                              "minimum": 24,
+                                              "type": "integer"
+                                            },
+                                            "method": {
+                                              "default": "CATMULL_CLARK",
+                                              "enum": [
+                                                "CATMULL_CLARK"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            "outer_join_policy": {
+                                              "enum": [
+                                                "joined_arc_v1",
+                                                "joined_arc_v2"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            "preview_levels": {
+                                              "default": 2,
+                                              "maximum": 3,
+                                              "minimum": 0,
+                                              "type": "integer"
+                                            }
+                                          },
+                                          "required": [],
+                                          "then": {
+                                            "required": [
+                                              "bore_support_width"
+                                            ]
+                                          },
+                                          "type": "object"
+                                        },
                                         "target_edge_length": {
                                           "default": 4.0,
                                           "exclusiveMinimum": 0,
                                           "maximum": 10,
                                           "type": "number"
+                                        },
+                                        "topology_strategy": {
+                                          "default": "tiled",
+                                          "description": "Legacy routes remain explicit compatibility paths. sparse_annulus target_edge_length controls straight-outline and wall-height sampling; radial spans use bounded minimal angle/aspect-qualified layouts. local_patch_blocks keeps its explicit fixed local_patch_bounds frame. sparse_control_cage is the versioned low-density single-hole closed-body route; source-cage review is separate from evaluated shape qualification.",
+                                          "enum": [
+                                            "tiled",
+                                            "sparse_annulus",
+                                            "local_patch_blocks",
+                                            "subd_control_cage",
+                                            "sparse_control_cage"
+                                          ],
+                                          "type": "string"
                                         },
                                         "z_max": {
                                           "oneOf": [
@@ -9657,6 +10582,11 @@
                                         "z_min",
                                         "z_max"
                                       ],
+                                      "then": {
+                                        "required": [
+                                          "local_patch_bounds"
+                                        ]
+                                      },
                                       "type": "object"
                                     },
                                     {
@@ -11239,6 +12169,50 @@
                 "required": [
                   "op",
                   "feature"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "corridor": {
+                    "enum": [
+                      "east",
+                      "south"
+                    ],
+                    "type": "string"
+                  },
+                  "expected_feature_sha256": {
+                    "maxLength": 64,
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "feature_id": {
+                    "maxLength": 96,
+                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                    "type": "string"
+                  },
+                  "fraction": {
+                    "maximum": 0.8,
+                    "minimum": 0.2,
+                    "type": "number"
+                  },
+                  "op": {
+                    "const": "insert_sparse_strip"
+                  },
+                  "step_id": {
+                    "maxLength": 96,
+                    "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "op",
+                  "feature_id",
+                  "step_id",
+                  "expected_feature_sha256",
+                  "corridor",
+                  "fraction"
                 ],
                 "type": "object"
               },

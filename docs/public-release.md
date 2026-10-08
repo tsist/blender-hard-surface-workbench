@@ -27,3 +27,13 @@ The Blender sidebar is a thin adapter. Installation, enablement and interactive 
 ## Repository split verification
 
 The repository split changes launch paths, implementation fingerprint inputs and the location of the Linux read guard. Constructor, geometry, scene validation, Blender worker and observation algorithms are unchanged from the documented baseline. Host/import/package and selected actual Blender integration checks are rerun for the split; historic geometry qualification is not represented as a new full reconstruction run.
+
+## dev.21-r1 source increment
+
+Source-bound reflection anchors and bounded diagnostic coverage are opt-in.
+HOST tests do not qualify the new native Blender adapter or establish surface
+quality. Native renderer validation is pending; existing source-preservation
+and per-action execution permissions still apply. Legacy placement remains
+available unchanged for reproducibility. No private case requests, saved
+projects, geometry exports, renders or native job artifacts belong in this
+public source distribution.

@@ -5,11 +5,13 @@ its monotonic CLI-entry timestamp so staging, queueing and validation count too.
 """
 from __future__ import annotations
 
+from contextlib import ExitStack
 from dataclasses import dataclass, fields
 import math
 import os
 from pathlib import Path
 import shutil
+import stat
 import time
 from typing import Callable, Mapping, Sequence
 
@@ -119,23 +121,109 @@ def available_ram_bytes() -> int | None:
     return None
 
 
-def tree_file_bytes(root: os.PathLike | str, *, max_files=20_000) -> int:
-    """Bounded physical file lengths, excluding directories; links are rejected."""
-    root = Path(root)
-    if root.is_symlink():
-        raise ValueError("Symlink disk accounting root is unsupported")
-    total, count = 0, 0
-    for directory, dirs, names in os.walk(root, followlinks=False):
-        for name in dirs + names:
-            path = Path(directory) / name
-            if path.is_symlink():
-                raise ValueError(f"Symlink in disk accounting root: {path}")
-        for name in names:
-            count += 1
-            if count > max_files:
-                raise BudgetExceeded("disk_accounting_files", count, max_files)
-            stat = (Path(directory) / name).stat()
-            total += stat.st_size
+def tree_file_bytes(root: os.PathLike | str, *, max_files=20_000,
+                    max_entries=40_000) -> int:
+    """Sample regular-file lengths without following links or pathname swaps.
+
+    Regular files may vanish or be atomically replaced during a live sample.
+    Such samples are not snapshots; a quiescent tree has an exact byte total.
+    Directory identity/traversal failures and non-regular files fail closed.
+    Both enumerated entries (including vanished names) and files are bounded.
+    """
+    for name, limit in (("max_files", max_files), ("max_entries", max_entries)):
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 0:
+            raise ValueError(f"{name} must be a nonnegative integer")
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        raise NotImplementedError("Disk accounting requires no-follow directory handles")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    total = files = entries = 0
+
+    def identity(info):
+        return info.st_dev, info.st_ino
+
+    def directory_stat(name, parent_fd):
+        info = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        if not stat.S_ISDIR(info.st_mode):
+            raise ValueError(f"Non-directory or symlink in disk accounting path: {name}")
+        return info
+
+    def verify_directory(name, parent_fd, initial):
+        if identity(directory_stat(name, parent_fd)) != identity(initial):
+            raise ValueError(f"Directory changed during disk accounting: {name}")
+
+    with ExitStack() as handles:
+        # Pin each root component, including its ancestors. O_NOFOLLOW applies
+        # to one component at a time, not just the final pathname component.
+        parent_fd = None
+        anchors = []
+        for name in Path(root).absolute().parts:
+            initial = directory_stat(name, parent_fd)
+            fd = os.open(name, flags, dir_fd=parent_fd)
+            handles.callback(os.close, fd)
+            if identity(os.fstat(fd)) != identity(initial):
+                raise ValueError(f"Directory changed during disk accounting: {name}")
+            anchors.append((name, parent_fd, initial))
+            parent_fd = fd
+
+        # Iterative traversal avoids recursion and unbounded directory lists.
+        stack = [(parent_fd, os.scandir(parent_fd), None)]
+        try:
+            while stack:
+                fd, iterator, guard = stack[-1]
+                entry = next(iterator, None)
+                if entry is None:
+                    if guard is not None:
+                        verify_directory(*guard)
+                    iterator.close()
+                    if guard is not None:
+                        os.close(fd)
+                    stack.pop()
+                    continue
+                entries += 1
+                if entries > max_entries:
+                    raise BudgetExceeded("disk_accounting_entries", entries, max_entries)
+                was_regular = entry.is_file(follow_symlinks=False)
+                was_directory = entry.is_dir(follow_symlinks=False)
+                if not (was_regular or was_directory):
+                    raise ValueError(f"Symlink, special or unclassified file in disk accounting root: {entry.name}")
+                try:
+                    info = os.stat(entry.name, dir_fd=fd, follow_symlinks=False)
+                except FileNotFoundError:
+                    # Atomic report replacement can remove an enumerated temp
+                    # filename. Directory disappearance still fails closed.
+                    if not was_regular:
+                        raise
+                    files += 1
+                else:
+                    if was_directory and (not stat.S_ISDIR(info.st_mode) or
+                                          info.st_ino != entry.inode()):
+                        raise ValueError(f"Directory changed during disk accounting: {entry.name}")
+                    if stat.S_ISDIR(info.st_mode):
+                        if not was_directory:
+                            raise ValueError(f"File became directory during disk accounting: {entry.name}")
+                        child = os.open(entry.name, flags, dir_fd=fd)
+                        try:
+                            if identity(os.fstat(child)) != identity(info):
+                                raise ValueError(f"Directory changed during disk accounting: {entry.name}")
+                            child_iterator = os.scandir(child)
+                        except BaseException:
+                            os.close(child)
+                            raise
+                        stack.append((child, child_iterator, (entry.name, fd, info)))
+                        continue
+                    if not stat.S_ISREG(info.st_mode):
+                        raise ValueError(f"Symlink or special file in disk accounting root: {entry.name}")
+                    files += 1
+                    total += info.st_size
+                if files > max_files:
+                    raise BudgetExceeded("disk_accounting_files", files, max_files)
+            for anchor in reversed(anchors):
+                verify_directory(*anchor)
+        finally:
+            for fd, iterator, guard in reversed(stack):
+                iterator.close()
+                if guard is not None:
+                    os.close(fd)
     return total
 
 

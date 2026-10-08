@@ -105,3 +105,62 @@ def resolve_feature_port(registry,feature_id,port):
     matches=[r for r in registry if r.get('feature_id')==feature_id and r.get('port')==port and r.get('valid',True)]
     if len(matches)!=1: raise ContractError('SELECTION_AMBIGUOUS' if len(matches)>1 else 'SELECTION_STALE','Feature port did not resolve uniquely',details={'feature_id':feature_id,'port':port,'candidate_count':len(matches)})
     return matches[0]
+
+
+STRUCTURE_BINDING_FIELDS = {
+    'schema_version','object_id','data_id','mesh_state','schedule_revision',
+    'topology_epoch','authorship_sha256','construction_sha256','manifest_sha256',
+    'context_sha256','source_binding_sha256','geometry_signature',
+    'topology_signature','attribute_signature','structure_signature',
+}
+
+
+def validate_structure_registry(registry):
+    """Validate separately held native binding receipts, never grant approval."""
+    if not isinstance(registry,dict) or len(registry)>128:
+        raise ContractError('STRUCTURE_REGISTRY_INVALID','Bounded object-to-binding registry required')
+    import copy
+    for key,row in registry.items():
+        validate_id(key)
+        if not isinstance(row,dict) or set(row)!=STRUCTURE_BINDING_FIELDS:
+            raise ContractError('STRUCTURE_REGISTRY_INVALID','Native binding fields differ')
+        if row['schema_version']!='native-control-structure/1.0' or row['mesh_state']!='control':
+            raise ContractError('STRUCTURE_REGISTRY_INVALID','Unsupported native binding version/state')
+        if row['object_id']!=key:raise ContractError('STRUCTURE_REGISTRY_INVALID','Registry key differs from actual object identity')
+        validate_id(row['data_id'])
+        if not isinstance(row['schedule_revision'],str) or not row['schedule_revision'] or len(row['schedule_revision'])>200:
+            raise ContractError('STRUCTURE_REGISTRY_INVALID','Explicit authored schedule identity required')
+        if type(row['topology_epoch']) is not int or row['topology_epoch']<0:
+            raise ContractError('STRUCTURE_REGISTRY_INVALID','Nonnegative topology epoch required')
+        for field in STRUCTURE_BINDING_FIELDS-{'schema_version','object_id','data_id','mesh_state','schedule_revision','topology_epoch'}:
+            if not isinstance(row[field],str) or not re.fullmatch('[0-9a-f]{64}',row[field]):
+                raise ContractError('STRUCTURE_REGISTRY_INVALID','Complete SHA-256 binding required',details={'field':field})
+    return copy.deepcopy(registry)
+
+
+def register_structure_binding(registry,binding,*,previous_binding=None,topology_migration=None):
+    """Create or explicitly continue one object receipt; no blind rebinding."""
+    import copy
+    result=validate_structure_registry(registry)
+    if not isinstance(binding,dict):raise ContractError('STRUCTURE_REGISTRY_INVALID','Binding must be an object')
+    oid=binding.get('object_id');validated=validate_structure_registry({oid:binding})[oid]
+    if oid in result:
+        if previous_binding!=result[oid]:raise ContractError('STRUCTURE_REGISTRY_STALE','Explicit matching previous binding required to replace receipt')
+        if validated['data_id']!=result[oid]['data_id'] or validated['schedule_revision']!=result[oid]['schedule_revision']:
+            raise ContractError('STRUCTURE_REGISTRY_SCOPE','This native edit path only continues object/data/schedule/epoch')
+        if validated['topology_epoch']!=result[oid]['topology_epoch']:
+            migration=topology_migration
+            if (validated['schedule_revision']!='sparse_sharp_panel_ids_v2' or validated['topology_epoch']!=result[oid]['topology_epoch']+1
+                    or not isinstance(migration,dict) or migration.get('schema_version')!='sparse-native-insertion/1.0'
+                    or migration.get('status')!='pass' or migration.get('kernel_edit',{}).get('status')!='pass'
+                    or migration.get('before_binding')!=result[oid] or migration.get('after_binding')!=validated
+                    or migration.get('complete_body')!='verified' or migration.get('original_control_vertices')!='exactly_preserved'):
+                raise ContractError('STRUCTURE_REGISTRY_SCOPE','Topology epoch changes require the exact verified sparse full-body migration')
+        elif topology_migration is not None:
+            raise ContractError('STRUCTURE_REGISTRY_SCOPE','A topology migration must increment its epoch')
+    elif previous_binding is not None:
+        raise ContractError('STRUCTURE_REGISTRY_STALE','Previous binding supplied for an absent object')
+    elif topology_migration is not None:
+        raise ContractError('STRUCTURE_REGISTRY_SCOPE','Topology migration requires an existing exact source registry')
+    result[oid]=copy.deepcopy(validated)
+    return result

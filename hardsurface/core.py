@@ -107,6 +107,19 @@ def loaded_solutions():
     if expected!=digest(solutions):raise CoreError('SOLUTION_STATE_CONFLICT','Saved solutions SHA does not match content')
     return solutions
 
+def loaded_structure_registry():
+    from .identity import validate_structure_registry
+    from .contract import strict_loads
+    raw=bpy.context.scene.get('hs_structure_registry')
+    expected=bpy.context.scene.get('hs_structure_registry_sha256')
+    if raw is None:
+        if expected is not None:raise CoreError('STRUCTURE_REGISTRY_CONFLICT','Registry SHA exists without registry')
+        return {}
+    try:registry=validate_structure_registry(strict_loads(raw))
+    except Exception as exc:raise CoreError('STRUCTURE_REGISTRY_INVALID','Saved structure registry is invalid') from exc
+    if digest(registry)!=expected:raise CoreError('STRUCTURE_REGISTRY_CONFLICT','Saved structure registry SHA mismatch')
+    return registry
+
 def inspect_scene():
     scene_units=require_si_scene()
     ids={};data_ids={};objects=[]
@@ -124,20 +137,33 @@ def inspect_scene():
             'objects':objects,'saved_solutions':solutions,'saved_solutions_sha256':digest(solutions),'design_state':state,'design_state_sha256':digest(state) if state else None,
             'generated_baseline':json.loads(bpy.context.scene.get('hs_generated_baseline','{}')),
             'manual_overlay':json.loads(bpy.context.scene.get('hs_manual_overlay','{}')),
+            'structure_registry':loaded_structure_registry(),
             'blender_version':bpy.app.version_string,'blender_build_hash':bpy.app.build_hash.decode()}
 
 def _projection(row):
     # Names and all-object material bindings can be reapplied; face assignments are protected.
     return {k:v for k,v in row.items() if k not in ('name','materials')}
 
-def _preflight_target(obj):
+def _preflight_target(obj, *, allow_subd_rebuild=False):
     if obj.type!='MESH' or obj.library or obj.override_library:raise CoreError('TARGET_UNSUPPORTED','Only local Mesh targets supported')
     if obj.mode!='OBJECT' or obj.data.shape_keys or obj.animation_data or obj.constraints or obj.parent or obj.vertex_groups:raise CoreError('TARGET_DEFORMATION_UNSUPPORTED','Mode, parent, animation, deformation or constraints are unsupported')
     if len(obj.users_scene)!=1 or len(obj.users_collection)!=1 or any(c.users>1 for c in obj.users_collection):raise CoreError('SHARED_SCENE_CONFLICT','Target belongs to multiple scene or collection consumers')
     if obj.instance_type!='NONE':raise CoreError('INSTANCE_CONTEXT_UNSUPPORTED','Instance-producing target is unsupported')
     if obj.data.users>1:raise CoreError('SHARED_DATA_CONFLICT','Shared target mesh is rejected; no implicit write expansion')
     if any(m.show_render!=m.show_viewport for m in obj.modifiers):raise CoreError('EVALUATION_MISMATCH','Modifier viewport and render flags must agree')
-    if any(m.type not in ('BOOLEAN','BEVEL','SOLIDIFY') or not m.name.startswith('HSW:') for m in obj.modifiers):raise CoreError('UNKNOWN_MODIFIER','Unmanaged modifier stack requires explicit preservation support')
+    if obj.modifiers and allow_subd_rebuild and obj.get('hs_subdivision_settings'):
+        settings=json.loads(obj['hs_subdivision_settings'])
+        metadata=json.loads(obj.get('hs_quad_metadata','{}'))
+        if obj.get('hs_quad_constructor')!='quad.panel' or metadata.get('subdivision_cage',{}).get('strategy') not in ('subd_control_cage','sparse_control_cage') or len(obj.modifiers)!=1 or obj.modifiers[0].type!='SUBSURF' or any(getattr(obj.modifiers[0],k)!=v for k,v in settings.items()):
+            raise CoreError('SUBD_REBUILD_BINDING','Only the exact authored single SubD stack can be regenerated')
+        from .structure_native import has_native_identity,validate_native_structure
+        if has_native_identity(obj):
+            loops=validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length))['semantic_control_loops']
+        else:
+            from .subd_cage_validation import inspect_control_loops
+            loops=inspect_control_loops(obj)
+        if loops['status']!='pass':raise CoreError('SUBD_REBUILD_BINDING','Authored source loops/creases differ from the regeneration contract')
+    elif any(m.type not in ('BOOLEAN','BEVEL','SOLIDIFY') or not m.name.startswith('HSW:') for m in obj.modifiers):raise CoreError('UNKNOWN_MODIFIER','Unmanaged modifier stack requires explicit preservation support; SubD support is limited to source-bound parameter regeneration')
 
 def _apply_modifier(obj,modifier):
     bpy.ops.object.select_all(action='DESELECT');obj.select_set(True);bpy.context.view_layer.objects.active=obj
@@ -218,6 +244,8 @@ class DomainExecutor:
         self.protected_ids={r['object_id'] for r in self.before['objects'] if r['generated'] and (r['feature_id'] not in self.selected_features or r['object_id'] in self.non_target_ids)}
         self.before_manual={r['object_id'] or r['name']:r for r in self.before['objects'] if not r['generated'] or r['object_id'] in self.protected_ids} 
         self.overlay={};self.rebuild_objects=[]
+        self.structure_before={};self.structure_edit_plans={}
+        self.structure_registry=loaded_structure_registry()
         self.length_tolerance_m=float(self.params['quality']['length_tolerance'])*self.scale
         self.angle_tolerance_rad=math.radians(float(self.params['quality']['angle_tolerance_deg']))
         self.precision_report=self._qualify_precision()
@@ -271,6 +299,7 @@ class DomainExecutor:
         bpy.context.scene['hs_solutions']=encoded;bpy.context.scene['hs_solutions_sha256']=digest(self.solutions)
         loaded_solutions()
     def _prepare_existing(self):
+        from .structure_native import has_native_identity
         managed=[r for r in self.before['objects'] if r['generated'] and r['feature_id'] in self.selected_features]
         forbidden=[r['object_id'] for r in managed if r['object_id'] in self.non_target_ids]
         if forbidden:raise CoreError('PROTECTED_TARGET','Selected feature intersects explicitly protected object IDs',{'object_ids':forbidden})
@@ -278,6 +307,12 @@ class DomainExecutor:
             for row in managed:
                 obj=next(o for o in bpy.context.scene.objects if o.get('hs_object_id')==row['object_id'])
                 self.overlay[row['object_id']]={'name':obj.name,'materials':[slot.material for slot in obj.material_slots]}
+                if obj.get('hs_object_id') in self.structure_registry or obj.get('hs_subdivision_settings') or (obj.type=='MESH' and has_native_identity(obj)):
+                    if obj.type!='MESH':raise CoreError('STRUCTURE_NATIVE_UNSUPPORTED','Registered structure is not an actual mesh')
+                    from .structure_native import validate_native_structure
+                    binding=self.structure_registry.get(row['object_id'])
+                    if binding is None:raise CoreError('STRUCTURE_REGISTRY_MISSING','Checkpoint authored object lacks external binding')
+                    validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length),expected_binding=binding)
             # Resume does not rebuild existing generated objects; restore output ports from provenance.
             for obj in bpy.context.scene.objects:
                 if obj.get('hs_generated'):
@@ -300,10 +335,21 @@ class DomainExecutor:
         baseline=self.before['generated_baseline']
         for row in managed:
             oid=row['object_id'];obj=next(o for o in bpy.context.scene.objects if o.get('hs_object_id')==oid)
-            _preflight_target(obj)
+            _preflight_target(obj,allow_subd_rebuild=True)
             old=baseline.get(oid)
             if old is None or _projection(old)!=_projection(row):raise CoreError('MANUAL_GENERATED_CONFLICT','Generated geometry, topology, transforms, stack or bindings differ from baseline',{'object_id':oid})
             self.overlay[oid]={'name':obj.name,'materials':[s.material for s in obj.material_slots]}
+            if oid in self.structure_registry or obj.get('hs_subdivision_settings') or has_native_identity(obj):
+                from .structure_native import validate_native_structure
+                from .structure_edit import plan_authored_edit
+                prior_binding=self.structure_registry.get(oid)
+                if prior_binding is None:raise CoreError('STRUCTURE_REGISTRY_MISSING','Authored rebuild lacks separately held registry binding',{'object_id':oid})
+                native=validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length),expected_binding=prior_binding)
+                matches=[s for s in self.plan['steps'] if s.get('step_key')==obj.get('hs_step_key') and s.get('op')=='quad.panel']
+                if len(matches)!=1:raise CoreError('STRUCTURE_REBUILD_SCOPE','Authored rebuild requires exactly the matching panel step',{'object_id':oid})
+                future=matches[0].get('effective_params',matches[0])
+                edit=plan_authored_edit(native['witness'],native['authorship'],future,datum_policy=future.get('edit_datum','not_requested'))
+                self.structure_before[oid]=native;self.structure_edit_plans[oid]=edit
             self.rebuild_objects.append(obj)
         # Remove only managed candidate objects after all protection checks, never source file or manual objects.
         for obj in self.rebuild_objects:bpy.data.objects.remove(obj,do_unlink=True)
@@ -552,6 +598,8 @@ class DomainExecutor:
         completed=[*self.completed,step['step_key']]
         summary={'state':'persisted_unverified','design_state_sha256':digest(self.state),'completed_step_keys':completed}
         if quad_quality is not None:summary['quad_quality']=quad_quality
+        if any(s.get('op')=='quad.panel' and s.get('effective_params',s).get('topology_strategy') in ('subd_control_cage','sparse_control_cage') for s in self.plan['steps']):
+            summary['structure_identity']=self._structure_identity_check()
         # The current checkpoint's semantic witness is saved before the .blend;
         # artifact hashes cannot be embedded in the file whose hash they name.
         records=[*self.steps,{'step_key':step['step_key'],'op':'checkpoint','status':'pass','evidence':summary}]
@@ -604,16 +652,32 @@ class DomainExecutor:
         if not objects:raise CoreError('CHECK_NO_WITNESS','No visible mesh for mandatory quad topology check')
         evidence=[];intersection_cache={}
         for obj in objects:
-            for state in ('control','evaluated'):
+            states=('control',) if self.params['quality'].get('stage','full')=='source_cage' else ('control','evaluated')
+            for state in states:
                 report=inspect_object(obj,state,intersection_cache)
                 index=len(list(self.job.glob('quad-quality-*.json')))
                 detail=save_json_new(self.job/('quad-quality-'+str(index).zfill(4)+'.json'),report)
                 evidence.append({'object_id':obj.get('hs_object_id'),'feature_id':obj.get('hs_feature_id'),'mesh_state':state,'passed':report['passed'],'details':detail})
                 if not report['passed']:raise CoreError('QUAD_QUALITY_FAILED','Actual mesh failed mandatory topology quality gates',evidence[-1])
-        return {'status':'pass','method':'actual control and evaluated polygons; zero ngons, zero unapproved triangles, bounded metric and manifold gates','evidence':evidence}
+        return {'status':'pass','stage':self.params['quality'].get('stage','full'),'method':'actual declared-stage polygons; zero ngons, zero unapproved triangles, bounded metric and manifold gates','evaluated_shape':'not_run' if self.params['quality'].get('stage','full')=='source_cage' else 'see_actual_evaluated_evidence','evidence':evidence}
+    def _structure_identity_check(self):
+        from .structure_native import validate_native_structure,has_native_identity
+        targets=[o for o in bpy.context.scene.objects if o.type=='MESH' and o.get('hs_generated') and o.get('hs_feature_id') in self.selected_features and (o.get('hs_subdivision_settings') or has_native_identity(o) or o.get('hs_object_id') in self.structure_registry)]
+        if not targets:raise CoreError('CHECK_NO_WITNESS','No authored panel for structure identity check')
+        evidence=[]
+        for obj in targets:
+            expected_binding=self.structure_registry.get(obj.get('hs_object_id'))
+            if expected_binding is None:raise CoreError('STRUCTURE_REGISTRY_MISSING','Authored target lacks external registry receipt')
+            report=validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length),expected_binding=expected_binding)
+            index=len(list(self.job.glob('structure-quality-*.json')))
+            detail=save_json_new(self.job/('structure-quality-'+str(index).zfill(4)+'.json'),report)
+            evidence.append({'object_id':obj.get('hs_object_id'),'data_id':obj.data.get('hs_data_id'),'status':report['status'],'details':detail})
+            if report['status']!='pass':raise CoreError('STRUCTURE_QUALITY_FAILED','Actual authored structure failed validation',evidence[-1])
+        return {'status':'pass','method':'actual native control mesh identities, full edge set, attributes and structural witnesses; no visual qualification','evidence':evidence}
     def check_registry(self):
         requested=set(self.params['quality']['required'])
         if self.params['purpose']=='production' or any(s['op'].startswith('quad.') for s in self.plan['steps']):requested.add('quad_topology')
+        if any(s.get('op')=='quad.panel' and s.get('effective_params',s).get('topology_strategy') in ('subd_control_cage','sparse_control_cage') for s in self.plan['steps']):requested.add('structure_identity')
         for unit in self.params['work_units']:requested.update(unit['checks'])
         records={};body_objects=[o for o in bpy.context.scene.objects if o.type=='MESH' and o.get('hs_generated') and o.get('hs_feature_id') in self.selected_features and not o.hide_render]
         geometry_steps=[s for s in self.steps if s.get('op','').startswith(('primitive.','profile.','quad.'))]
@@ -621,6 +685,8 @@ class DomainExecutor:
             if name in ('source_preserved','reopen','dependencies'):
                 records[name]={'status':'not_run','owner':'host','method':'source guards, declared closure and independent subprocess reopen'};continue
             if name=='preservation':records[name]={'status':'pass','method':'B/C/N/M merge and exact non-target snapshot comparison'};continue
+            if name=='structure_identity':
+                records[name]=self._structure_identity_check();continue
             if name=='quad_topology':
                 records[name]=self._quad_topology_check();continue
             if name=='reference_consistency':raise CoreError('CHECK_UNSUPPORTED','Reference visual consistency requires approved production review; numeric core cannot declare pass')
@@ -667,8 +733,34 @@ class DomainExecutor:
                 ports={pid:self.profile(sid,pid) for pid in solution.get('profiles',{})};ev={k:solution.get(k) for k in ('status','dof','dof_status','verification','branch_signature','backend')}
             elif op.startswith('quad.'):
                 from .ops.quad_bridge import create
-                obj,ev=create(p,step['feature_id'],step['id'])
+                expected_oid=stable_id(self.project,'object/'+step['step_key']+'/body_object')
+                prior_native=self.structure_before.get(expected_oid)
+                prior_edit=self.structure_edit_plans.get(expected_oid,{})
+                topology_epoch=None
+                if prior_native is not None:
+                    topology_epoch=prior_native['binding']['topology_epoch']+(1 if prior_edit.get('schema_version')=='sparse-native-insertion/1.0' else 0)
+                obj,ev=create(p,step['feature_id'],step['id'],topology_epoch=topology_epoch)
                 self._identity(obj,step);ports={'body_object':obj}
+                if p.get('topology_strategy') in ('subd_control_cage','sparse_control_cage'):
+                    from .structure_native import bind_native_structure,validate_native_structure
+                    from .structure_edit import verify_authored_edit
+                    expected_authorship=step.get('geometry_estimate',{}).get('authorship_sha256')
+                    if not expected_authorship:raise CoreError('STRUCTURE_PLAN_BINDING_MISSING','Host plan lacks the separate authored identity SHA')
+                    binding=bind_native_structure(obj,expected_authorship_sha256=expected_authorship,source_binding={'request_id':self.params['request_id'],'source':self.params['source'],'job_id':self.job.name},unit_scale=float(bpy.context.scene.unit_settings.scale_length))
+                    current=validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length))
+                    oid=obj['hs_object_id']
+                    edit_result=None
+                    if oid in self.structure_before:
+                        edit_result=verify_authored_edit(self.structure_before[oid],current,self.structure_edit_plans[oid])
+                        edit_ref=save_json_new(self.job/('structure-edit-'+str(len(self.steps)).zfill(4)+'.json'),edit_result)
+                        ev['structure_edit']={'status':'pass','evidence':edit_ref,'scope':'declared authored-parameter rebuild; visual and dimensional qualification separate'}
+                    from .identity import register_structure_binding
+                    previous=self.structure_before[oid]['binding'] if oid in self.structure_before else None
+                    migration=edit_result if edit_result and edit_result.get('schema_version')=='sparse-native-insertion/1.0' else None
+                    self.structure_registry=register_structure_binding(self.structure_registry,binding,previous_binding=previous,topology_migration=migration)
+                    bpy.context.scene['hs_structure_registry']=json.dumps(self.structure_registry,sort_keys=True,separators=(',',':'))
+                    bpy.context.scene['hs_structure_registry_sha256']=digest(self.structure_registry)
+                    ev['structure_binding']=binding
                 expected=step.get('geometry_estimate',{}).get('construction_sha256')
                 if expected!=ev['construction_sha256']:raise CoreError('QUAD_PLAN_MISMATCH','Host and Blender structured constructions differ')
             elif op.startswith('primitive.'):ports,ev=self._new_primitive(step,p)
@@ -711,4 +803,22 @@ def verify_saved_candidate(expected_report):
     expected=expected_report.get('scene_snapshot',expected_report);actual=inspect_scene()
     # Build metadata is exact for this qualification; all object/domain projections are compared.
     if actual!=expected:raise CoreError('REOPEN_MISMATCH','Independent reopen scene snapshot differs',{'expected_sha256':digest(expected),'actual_sha256':digest(actual)})
-    return {'outcome':'pass','independent_reopen':True,'candidate':file_record(bpy.data.filepath),'producer_identity':expected_report.get('producer_identity'),'verifier_identity':PROCESS_IDENTITY,'checks':{'technical':'pass','preservation':'pass','dependency_reproduction':'pass','state_consistency':'pass'},'acceptance':{'reopen':'pass','preservation':'pass'},'scene_snapshot_sha256':digest(actual),'design_state_sha256':actual['design_state_sha256'],'object_count':len(actual['objects']),'blender_version':bpy.app.version_string,'blender_build_hash':bpy.app.build_hash.decode()}
+    structure_evidence=[]
+    registry=loaded_structure_registry()
+    found_structure_ids=set()
+    from .structure_native import validate_native_structure,has_native_identity
+    for obj in bpy.context.scene.objects:
+        if obj.type=='MESH' and obj.get('hs_generated') and (obj.get('hs_subdivision_settings') or has_native_identity(obj) or obj.get('hs_object_id') in registry):
+            oid=obj.get('hs_object_id');binding=registry.get(oid)
+            if binding is None:raise CoreError('STRUCTURE_REGISTRY_MISSING','Reopened authored object lacks external registry binding')
+            found_structure_ids.add(oid)
+            native=validate_native_structure(obj,unit_scale=float(bpy.context.scene.unit_settings.scale_length),expected_binding=binding)
+            structure_evidence.append({'object_id':obj.get('hs_object_id'),'status':native['status'],'kernel_report':native['kernel_report'],'binding':native['binding']})
+    if found_structure_ids!=set(registry):raise CoreError('STRUCTURE_REGISTRY_SCOPE','Reopened registry has absent or foreign authored object IDs')
+    return {'structure_identity':{'status':'pass' if structure_evidence else 'not_applicable','evidence':structure_evidence},'outcome':'pass','independent_reopen':True,'candidate':file_record(bpy.data.filepath),'producer_identity':expected_report.get('producer_identity'),'verifier_identity':PROCESS_IDENTITY,'checks':{'technical':'pass','preservation':'pass','dependency_reproduction':'pass','state_consistency':'pass'},'acceptance':{'reopen':'pass','preservation':'pass'},'scene_snapshot_sha256':digest(actual),'design_state_sha256':actual['design_state_sha256'],'object_count':len(actual['objects']),'blender_version':bpy.app.version_string,'blender_build_hash':bpy.app.build_hash.decode()}
+
+
+def diagnose_subdivision(request, job_dir):
+    """Whole read-only domain unit, also exposed through the public host CLI."""
+    from .subdivision import execute
+    return execute(request, job_dir)

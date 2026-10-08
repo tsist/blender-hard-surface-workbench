@@ -1,0 +1,1377 @@
+{
+  "$id": "urn:hardsurface:structure-plan:1.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Declarations only. Host validation never grants reference approval or production qualification.",
+  "properties": {
+    "asset_profile": {
+      "additionalProperties": false,
+      "properties": {
+        "delivery_layers": {
+          "items": {
+            "enum": [
+              "editable_master",
+              "evaluated_high"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "length_unit": {
+          "const": "mm"
+        },
+        "observation": {
+          "additionalProperties": false,
+          "properties": {
+            "camera_reference": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bytes": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "file": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "file",
+                    "sha256",
+                    "bytes"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "resolution_px": {
+              "oneOf": [
+                {
+                  "items": {
+                    "maximum": 65536,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "maxItems": 2,
+                  "minItems": 2,
+                  "type": "array"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "status": {
+              "const": "proposed"
+            },
+            "view_ids": {
+              "items": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "maxItems": 32,
+              "minItems": 0,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "status",
+            "camera_reference",
+            "resolution_px",
+            "view_ids"
+          ],
+          "type": "object"
+        },
+        "route": {
+          "enum": [
+            "film_product",
+            "realtime"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "route",
+        "length_unit",
+        "delivery_layers",
+        "observation"
+      ],
+      "type": "object"
+    },
+    "design": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        },
+        "edge_roundover_mm": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "holes": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "center_mm": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "kind": {
+                "const": "circle"
+              },
+              "radius_mm": {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              "rim": {
+                "const": "sharp"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "rim",
+              "center_mm",
+              "radius_mm"
+            ],
+            "type": "object"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+        },
+        "length_unit": {
+          "const": "mm"
+        },
+        "outline": {
+          "additionalProperties": false,
+          "properties": {
+            "center_mm": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "corner_radius_mm": {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            "kind": {
+              "const": "rounded_rectangle"
+            },
+            "size_mm": {
+              "items": {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "center_mm",
+            "size_mm",
+            "corner_radius_mm"
+          ],
+          "type": "object"
+        },
+        "parent_surface": {
+          "const": "plane"
+        },
+        "z_range_mm": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "asset_id",
+        "parent_surface",
+        "length_unit",
+        "outline",
+        "z_range_mm",
+        "edge_roundover_mm",
+        "holes"
+      ],
+      "type": "object"
+    },
+    "edit_contract": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_region_ids": {
+          "items": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 128,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "allowed_parameters": {
+          "items": {
+            "enum": [
+              "hole.center_x_mm",
+              "hole.center_y_mm",
+              "hole.radius_mm",
+              "panel.thickness_mm",
+              "panel.edge_roundover_mm"
+            ],
+            "type": "string"
+          },
+          "maxItems": 5,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "ambiguity_policy": {
+          "const": "stop"
+        },
+        "invariants": {
+          "items": {
+            "enum": [
+              "non_target_unchanged",
+              "outside_patch_unchanged",
+              "semantic_identity"
+            ],
+            "type": "string"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "parameter_ranges": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "maximum": {
+                "type": "number"
+              },
+              "minimum": {
+                "type": "number"
+              },
+              "parameter": {
+                "enum": [
+                  "hole.center_x_mm",
+                  "hole.center_y_mm",
+                  "hole.radius_mm",
+                  "panel.thickness_mm",
+                  "panel.edge_roundover_mm"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "parameter",
+              "minimum",
+              "maximum"
+            ],
+            "type": "object"
+          },
+          "maxItems": 5,
+          "minItems": 0,
+          "type": "array"
+        },
+        "protected_object_ids": {
+          "items": {
+            "maxLength": 96,
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_.:-]{0,95}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$",
+            "type": "string"
+          },
+          "maxItems": 128,
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "selection_invalidation": {
+          "const": "invalidate_dependents"
+        },
+        "target_feature_ids": {
+          "items": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "target_feature_ids",
+        "allowed_parameters",
+        "parameter_ranges",
+        "affected_region_ids",
+        "protected_object_ids",
+        "invariants",
+        "ambiguity_policy",
+        "selection_invalidation"
+      ],
+      "type": "object"
+    },
+    "evaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "blender_version": {
+          "maxLength": 32,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        },
+        "levels": {
+          "items": {
+            "maximum": 3,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "method": {
+          "const": "CATMULL_CLARK"
+        },
+        "settings_status": {
+          "const": "proposed"
+        }
+      },
+      "required": [
+        "method",
+        "levels",
+        "blender_version",
+        "settings_status"
+      ],
+      "type": "object"
+    },
+    "execution_mode": {
+      "const": "dry_run"
+    },
+    "identity": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "evidence_version": {
+          "const": "1.0.0"
+        },
+        "implementation_id": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "operation_version": {
+          "const": "0.1.0"
+        },
+        "project_id": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        },
+        "request_id": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "project_id",
+        "contract_version",
+        "operation_version",
+        "evidence_version",
+        "implementation_id",
+        "implementation_sha256"
+      ],
+      "type": "object"
+    },
+    "operation": {
+      "const": "structure.plan"
+    },
+    "output": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_file": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "evidence_directory": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "overwrite": {
+          "const": false
+        },
+        "publication": {
+          "const": "candidate_only"
+        }
+      },
+      "required": [
+        "candidate_file",
+        "evidence_directory",
+        "publication",
+        "overwrite"
+      ],
+      "type": "object"
+    },
+    "quality_and_budget": {
+      "additionalProperties": false,
+      "properties": {
+        "budget_limits": {
+          "additionalProperties": false,
+          "properties": {
+            "control_faces": {
+              "maximum": 1000000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "cpu_threads": {
+              "maximum": 1024,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "evaluated_faces": {
+              "maximum": 1000000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "peak_ram_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wall_seconds": {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "wall_seconds",
+            "peak_ram_bytes",
+            "control_faces",
+            "evaluated_faces",
+            "cpu_threads"
+          ],
+          "type": "object"
+        },
+        "estimates": {
+          "additionalProperties": false,
+          "properties": {
+            "basis": {
+              "maxLength": 2048,
+              "minLength": 1,
+              "type": "string"
+            },
+            "control_faces": {
+              "oneOf": [
+                {
+                  "maximum": 1000000000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "peak_ram_bytes": {
+              "oneOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "const": null
+                }
+              ]
+            },
+            "status": {
+              "const": "unmeasured_estimate"
+            },
+            "wall_seconds": {
+              "oneOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                },
+                {
+                  "const": null
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "basis",
+            "wall_seconds",
+            "peak_ram_bytes",
+            "control_faces"
+          ],
+          "type": "object"
+        },
+        "required_evidence": {
+          "items": {
+            "enum": [
+              "source_mesh",
+              "evaluated_mesh",
+              "dimensions",
+              "visual",
+              "edit",
+              "reopen",
+              "holdout"
+            ],
+            "type": "string"
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "tolerances": {
+          "additionalProperties": false,
+          "properties": {
+            "explicit_arc_chord": {
+              "additionalProperties": false,
+              "properties": {
+                "basis": {
+                  "maxLength": 2048,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "const": "proposed"
+                },
+                "unit": {
+                  "const": "mm"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "const": null
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "value",
+                "unit",
+                "basis"
+              ],
+              "type": "object"
+            },
+            "nominal_dimensions": {
+              "additionalProperties": false,
+              "properties": {
+                "basis": {
+                  "maxLength": 2048,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "const": "proposed"
+                },
+                "unit": {
+                  "const": "mm"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "const": null
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "value",
+                "unit",
+                "basis"
+              ],
+              "type": "object"
+            },
+            "screen_observation": {
+              "additionalProperties": false,
+              "properties": {
+                "basis": {
+                  "maxLength": 2048,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "const": "proposed"
+                },
+                "unit": {
+                  "const": "px"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "const": null
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "value",
+                "unit",
+                "basis"
+              ],
+              "type": "object"
+            },
+            "subd_shape": {
+              "additionalProperties": false,
+              "properties": {
+                "basis": {
+                  "maxLength": 2048,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "const": "proposed"
+                },
+                "unit": {
+                  "const": "mm"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "const": null
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "value",
+                "unit",
+                "basis"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "nominal_dimensions",
+            "explicit_arc_chord",
+            "subd_shape",
+            "screen_observation"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "tolerances",
+        "budget_limits",
+        "estimates",
+        "required_evidence"
+      ],
+      "type": "object"
+    },
+    "reference_contract": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_evidence": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "authority": {
+                  "const": "user"
+                },
+                "design_sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "evidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bytes": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "file": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "sha256": {
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "file",
+                    "sha256",
+                    "bytes"
+                  ],
+                  "type": "object"
+                },
+                "project_id": {
+                  "maxLength": 96,
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                  "type": "string"
+                },
+                "reference_package_sha256": {
+                  "maxLength": 64,
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "source_message_id": {
+                  "maxLength": 2048,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "verification": {
+                  "const": "external_verification_required"
+                }
+              },
+              "required": [
+                "authority",
+                "source_message_id",
+                "evidence",
+                "reference_package_sha256",
+                "design_sha256",
+                "project_id",
+                "verification"
+              ],
+              "type": "object"
+            },
+            {
+              "const": null
+            }
+          ]
+        },
+        "artifacts": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "artifact": {
+                "additionalProperties": false,
+                "properties": {
+                  "bytes": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "file": {
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "maxLength": 64,
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file",
+                  "sha256",
+                  "bytes"
+                ],
+                "type": "object"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "role": {
+                "enum": [
+                  "appearance",
+                  "dimensions",
+                  "detail",
+                  "checklist"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "artifact"
+            ],
+            "type": "object"
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "type": "array"
+        },
+        "conflicts": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "description"
+            ],
+            "type": "object"
+          },
+          "maxItems": 32,
+          "minItems": 0,
+          "type": "array"
+        },
+        "package_id": {
+          "maxLength": 96,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+          "type": "string"
+        },
+        "package_sha256": {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "proposed",
+            "approval_evidence_supplied"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "package_id",
+        "version",
+        "package_sha256",
+        "artifacts",
+        "conflicts",
+        "approval_evidence"
+      ],
+      "type": "object"
+    },
+    "requested_usage": {
+      "enum": [
+        "development",
+        "production"
+      ],
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "structure-plan/1.0"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "saved_snapshot"
+        },
+        "object_ids": {
+          "items": {
+            "maxLength": 96,
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9_.:-]{0,95}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$",
+            "type": "string"
+          },
+          "maxItems": 128,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "save_state": {
+          "const": "saved"
+        },
+        "snapshot": {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "file": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "sha256": {
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "kind",
+        "snapshot",
+        "save_state",
+        "object_ids"
+      ],
+      "type": "object"
+    },
+    "structure": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary_ports": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "allowed_transforms": {
+                "items": {
+                  "enum": [
+                    "identity",
+                    "reverse_order"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "loop_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "normal": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array"
+              },
+              "origin_mm": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array"
+              },
+              "region_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "seam_policy": {
+                "const": "exact_ordered_match"
+              }
+            },
+            "required": [
+              "id",
+              "loop_id",
+              "region_id",
+              "origin_mm",
+              "normal",
+              "seam_policy",
+              "allowed_transforms"
+            ],
+            "type": "object"
+          },
+          "maxItems": 256,
+          "minItems": 0,
+          "type": "array"
+        },
+        "declaration_status": {
+          "const": "unverified"
+        },
+        "interfaces": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "minimum_gap_mm": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "port_a": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "port_b": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "relation": {
+                "enum": [
+                  "shared_boundary",
+                  "thickness_pair"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "port_a",
+              "port_b",
+              "relation",
+              "minimum_gap_mm"
+            ],
+            "type": "object"
+          },
+          "maxItems": 128,
+          "minItems": 0,
+          "type": "array"
+        },
+        "loops": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "closed": {
+                "const": true
+              },
+              "expected_vertex_count": {
+                "maximum": 1000000,
+                "minimum": 3,
+                "type": "integer"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "orientation": {
+                "enum": [
+                  "cw",
+                  "ccw"
+                ],
+                "type": "string"
+              },
+              "region_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "role": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "region_id",
+              "closed",
+              "orientation",
+              "expected_vertex_count"
+            ],
+            "type": "object"
+          },
+          "maxItems": 256,
+          "minItems": 0,
+          "type": "array"
+        },
+        "regions": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "feature_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "loop_ids": {
+                "items": {
+                  "maxLength": 96,
+                  "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "role": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "surface_id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "role",
+              "surface_id",
+              "feature_id",
+              "loop_ids"
+            ],
+            "type": "object"
+          },
+          "maxItems": 128,
+          "minItems": 0,
+          "type": "array"
+        }
+      },
+      "required": [
+        "declaration_status",
+        "regions",
+        "loops",
+        "boundary_ports",
+        "interfaces"
+      ],
+      "type": "object"
+    },
+    "topology": {
+      "additionalProperties": false,
+      "if": {
+        "required": [
+          "outer_join_policy"
+        ]
+      },
+      "properties": {
+        "bore_support_width_mm": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "hole_control_count": {
+          "maximum": 24,
+          "minimum": 24,
+          "type": "integer"
+        },
+        "local_patch_bounds_mm": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "master_face_policy": {
+          "const": "quad_preferred_zero_ngons"
+        },
+        "outer_join_policy": {
+          "enum": [
+            "joined_arc_v1",
+            "joined_arc_v2"
+          ],
+          "type": "string"
+        },
+        "outline_control_count": {
+          "maximum": 48,
+          "minimum": 48,
+          "type": "integer"
+        },
+        "strategy": {
+          "const": "subd_control_cage"
+        },
+        "triangle_exceptions": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+                "type": "string"
+              },
+              "reason": {
+                "maxLength": 2048,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "type": "object"
+          },
+          "maxItems": 0,
+          "minItems": 0,
+          "type": "array"
+        }
+      },
+      "required": [
+        "strategy",
+        "hole_control_count",
+        "outline_control_count",
+        "local_patch_bounds_mm",
+        "master_face_policy",
+        "triangle_exceptions"
+      ],
+      "then": {
+        "required": [
+          "bore_support_width_mm"
+        ]
+      },
+      "type": "object"
+    },
+    "work_units": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "checkpoint": {
+            "const": "none_read_only"
+          },
+          "depends_on": {
+            "items": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "maxItems": 128,
+            "minItems": 0,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "id": {
+            "maxLength": 96,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+            "type": "string"
+          },
+          "input_ports": {
+            "items": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "maxItems": 256,
+            "minItems": 0,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "operation": {
+            "const": "structure.plan"
+          },
+          "output_ports": {
+            "items": {
+              "maxLength": 96,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,95}$",
+              "type": "string"
+            },
+            "maxItems": 256,
+            "minItems": 0,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "operation",
+          "depends_on",
+          "input_ports",
+          "output_ports",
+          "checkpoint"
+        ],
+        "type": "object"
+      },
+      "maxItems": 128,
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "operation",
+    "execution_mode",
+    "requested_usage",
+    "identity",
+    "source",
+    "reference_contract",
+    "asset_profile",
+    "design",
+    "topology",
+    "evaluation",
+    "structure",
+    "edit_contract",
+    "work_units",
+    "quality_and_budget",
+    "output"
+  ],
+  "title": "Hard Surface host-only structure.plan 1.0",
+  "type": "object"
+}

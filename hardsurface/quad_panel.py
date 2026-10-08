@@ -107,6 +107,12 @@ def _analytic_normals(mesh,p):
 
 
 def build_quad_panel(p, *, feature_id):
+    if p.get('topology_strategy')=='sparse_control_cage':
+        from .sparse_panel_geometry import build_sparse_panel
+        return build_sparse_panel(p,feature_id=feature_id)
+    if p.get('topology_strategy')=='subd_control_cage':
+        from .quad_panel_subd import build_subd_panel
+        return build_subd_panel(p,feature_id=feature_id)
     width,depth=p['size'];cx,cy=p.get('center',[0,0]);lo,hi=p['z_min'],p['z_max'];radius=p['corner_radius']
     bevel=p.get('edge_bevel',0.);target=p.get('target_edge_length',4.);tolerance=p.get('chord_tolerance',.025)
     if not 0<=bevel<min(radius,(hi-lo)/2) or not 0<radius<min(width,depth)/2 or not hi>lo:
@@ -120,20 +126,44 @@ def build_quad_panel(p, *, feature_id):
             raise RuntimeFailure('QUAD_COUNTERBORE_DIMENSIONS','Counterbore must be wider and shallower than the plate')
     for lip in lips:
         if lip['z_min']>=lo:raise RuntimeFailure('QUAD_LIP_DIMENSIONS','Integral bottom lip must extend below the plate')
+    strategy=p.get('topology_strategy','tiled')
+    if strategy not in ('tiled','sparse_annulus','local_patch_blocks'):
+        raise RuntimeFailure('QUAD_PANEL_STRATEGY','Unknown panel topology strategy')
+    sparse_plan=None
+    if strategy=='sparse_annulus':
+        from .quad_panel_sparse import plan_sparse_annulus,emit_sparse_face
+        sparse_plan=plan_sparse_annulus(p)
+    local_plan=None
+    if strategy=='local_patch_blocks':
+        from .quad_panel_blocks import plan_local_patch_blocks,emit_local_blocks_face
+        local_plan=plan_local_patch_blocks(p)
     builder=MeshBuilder(max_vertices=200000,max_faces=200000)
     bounds=(cx-width/2+bevel,cy-depth/2+bevel,cx+width/2-bevel,cy+depth/2-bevel)
-    bottom_features=_features(p,'bottom')+[{'id':x['id'],'kind':'rectangle','bounds':x['bounds']} for x in lips]
-    top_features=_features(p,'top')
-    patch_alignment=align_artificial_patch_events([
-        {'axes':('x','y'),'bounds':bounds,'radius':radius-bevel,'holes':bottom_features},
-        {'axes':('x','y'),'bounds':bounds,'radius':radius-bevel,'holes':top_features}],min(.5,target*.15))
-    options={'chord_tolerance_mm':tolerance,'outline_radius':radius-bevel,
-             'max_segments':p.get('max_segments',512),'target_edge_length_mm':target,
-             'outline_chord_tolerance_mm':tolerance*(radius-bevel)/radius}
-    bottom=tiled_face(builder,bounds,bottom_features,lo,provenance=_role(feature_id,'panel_bottom'),**options)
-    top=tiled_face(builder,bounds,top_features,hi,
-        x_breaks=bottom['x_breaks'],y_breaks=bottom['y_breaks'],
-        provenance=_role(feature_id,'panel_top'),**options)
+    if sparse_plan is None and local_plan is None:
+        bottom_features=_features(p,'bottom')+[{'id':x['id'],'kind':'rectangle','bounds':x['bounds']} for x in lips]
+        top_features=_features(p,'top')
+        patch_alignment=align_artificial_patch_events([
+            {'axes':('x','y'),'bounds':bounds,'radius':radius-bevel,'holes':bottom_features},
+            {'axes':('x','y'),'bounds':bounds,'radius':radius-bevel,'holes':top_features}],min(.5,target*.15))
+        options={'chord_tolerance_mm':tolerance,'outline_radius':radius-bevel,
+                 'max_segments':p.get('max_segments',512),'target_edge_length_mm':target,
+                 'outline_chord_tolerance_mm':tolerance*(radius-bevel)/radius}
+        bottom=tiled_face(builder,bounds,bottom_features,lo,provenance=_role(feature_id,'panel_bottom'),**options)
+        top=tiled_face(builder,bounds,top_features,hi,
+            x_breaks=bottom['x_breaks'],y_breaks=bottom['y_breaks'],
+            provenance=_role(feature_id,'panel_top'),**options)
+    elif local_plan is not None:
+        patch_alignment=[]
+        bottom=emit_local_blocks_face(builder,local_plan,lo,_role(feature_id,'panel_bottom'))
+        top=emit_local_blocks_face(builder,local_plan,hi,_role(feature_id,'panel_top'))
+        bottom['holes']={holes[0]['id']:bottom['hole']}
+        top['holes']={holes[0]['id']:top['hole']}
+    else:
+        patch_alignment=[]
+        bottom=emit_sparse_face(builder,sparse_plan,lo,_role(feature_id,'panel_bottom'))
+        top=emit_sparse_face(builder,sparse_plan,hi,_role(feature_id,'panel_top'))
+        bottom['holes']={holes[0]['id']:bottom['hole']}
+        top['holes']={holes[0]['id']:top['hole']}
     for lip in lips:
         a=bottom['holes'][lip['id']];b=_translate_loop(builder,a,lip['z_min'])
         _bridge(builder,a,b,_role(feature_id,lip['id']+':wall'),target)
@@ -149,7 +179,9 @@ def build_quad_panel(p, *, feature_id):
             _bridge(builder,bb,b,role,target)
         else:_bridge(builder,a,b,role,target)
     low=bottom['outer'];high=top['outer']
-    bevel_segments=quarter_arc_segments(bevel,tolerance,p.get('max_segments',512)) if bevel else 0
+    active_plan=local_plan or sparse_plan
+    bevel_tolerance=active_plan['metadata']['error_budget_mm']['roundover_direction'] if active_plan else tolerance
+    bevel_segments=quarter_arc_segments(bevel,bevel_tolerance,p.get('max_segments',512)) if bevel else 0
     if bevel:
         for side,original,z in ((1,low,lo),(-1,high,hi)):
             previous=original
@@ -164,4 +196,17 @@ def build_quad_panel(p, *, feature_id):
         'sampling':'conforming planar field with feature-local annuli and shared loft rings',
         'nominal_outline':{'size_mm':p['size'],'radius_mm':radius,'z_min_mm':lo,'z_max_mm':hi},
         'artificial_patch_alignment':patch_alignment}
-    return _analytic_normals(finish_mesh(mesh,feature_id=feature_id),p)
+    if sparse_plan:
+        mesh['metadata']['sampling']='continuous bore O-loops with corner-only planar count reductions'
+        mesh['metadata']['sparse_layout']=sparse_plan['metadata']
+    if local_plan:
+        mesh['metadata']['sampling']='fixed local hole O-grid with 4:2 density termination, axial blocks and independent corner sectors'
+        mesh['metadata']['local_blocks_layout']=local_plan['metadata']
+    result=finish_mesh(mesh,feature_id=feature_id)
+    if sparse_plan:
+        from .quad_panel_sparse import actual_sampling_evidence
+        result['metadata']['sparse_layout']['actual_sampling']=actual_sampling_evidence(result,p)
+    if local_plan:
+        from .quad_panel_sparse import actual_sampling_evidence
+        result['metadata']['local_blocks_layout']['actual_sampling']=actual_sampling_evidence(result,p)
+    return _analytic_normals(result,p)
