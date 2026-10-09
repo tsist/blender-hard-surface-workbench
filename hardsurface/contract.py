@@ -605,6 +605,9 @@ def dimension_values(state,normalized=True):
     return result
 
 def schema(section='request'):
+    if section=='research-evidence':
+        from .research_evidence import schema as research_schema
+        return research_schema()
     registry={'report':REPORT,'case':obj({'id':IDENT,'strategy':enum('declared','boolean_exact','boolean_manifold','tessellation_refine')}),'request':REQUEST,'state':STATE,'step':STEP,'sketch':SKETCH,'constraint':CONSTRAINT,'selection':SELECTION,'design':DESIGN}
     if section in OPERATIONS: selected=OPERATIONS[section]['schema']
     elif section in registry: selected=registry[section]
@@ -617,7 +620,7 @@ def describe(section=None):
 
 def export_schemas(directory):
     directory=Path(directory); directory.mkdir(parents=True,exist_ok=True); paths=[]
-    for name in ('report','case','request','state','step','sketch','constraint','selection','design',*OPERATIONS):
+    for name in ('report','case','request','state','step','sketch','constraint','selection','design','research-evidence',*OPERATIONS):
         path=directory/(name+'.schema.json'); path.write_text(json.dumps(schema(name),ensure_ascii=False,sort_keys=True,indent=2)+'\n',encoding='utf-8'); paths.append(str(path))
     return paths
 

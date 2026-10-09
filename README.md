@@ -1,4 +1,4 @@
-# Hard Surface Workbench — reflected-anchor diagnostic candidate (dev.21)
+# Hard Surface Workbench — HOST research evidence candidate (dev.22)
 
 A development plugin and bundled CLI for protected, complete Blender work units.
 This source copy is not installed or enabled. No production or visual approval
@@ -7,8 +7,17 @@ is conveyed by a source archive or passing HOST tests.
 ## Development status
 
 See the [development plan](docs/development-plan.md) for the exact evidence
-boundary through dev.21 and pending native, visual and acceptance gates.
+boundary through dev.22 and pending native, visual and acceptance gates.
 All-quad meshes may still have poor edge flow and excessive face counts.
+
+## Generic research evidence
+
+The new HOST-only `hardsurface research-evidence --request` unit verifies an
+explicit source-bound linear candidate, external constraint residuals, local
+quad topology, both diagonal quality, declared vertex-sample coverage, and
+protected identities. It runs no LP or Blender process. Self-intersection and
+exact CC/junction solver support are not implemented; aggregate qualification
+remains incomplete. See [the evidence contract](docs/research-evidence.md).
 
 ## Source-bound reflected-strip placement
 
@@ -16,9 +25,10 @@ The optional per-view reflection anchor fixes diagnostic light placement for
 oblique flat faces. It authenticates native geometry/corner normals and camera
 binding, preserves source shape/shading, and reports predicted mirror hits
 separately from sampled PNG contrast. See [the contract](docs/reflection-anchor.md).
-This increment has HOST-only validation; native rendering and visual acceptance
+That dev.21 increment has HOST-only validation; native rendering and visual acceptance
 remain pending. Package protocol stays 0.2.0 for dispatcher compatibility;
-`CANDIDATE.json` and exact source identity distinguish dev.21-r1.
+`CANDIDATE.json` and exact source identity distinguish the current dev.22-r1
+snapshot from the retained dev.21-r1 reflection implementation.
 
 ## Optional complete corner columns
 

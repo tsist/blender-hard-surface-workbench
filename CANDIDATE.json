@@ -1,10 +1,10 @@
 {
-  "candidate": "reflection-anchor-diagnostic-dev.21-r1",
+  "candidate": "research-evidence-host-dev.22-r1",
   "protocol_base_version": "0.2.0",
   "author_schedule_revision": "sparse_sharp_panel_ids_v2",
   "legacy_schedule": "single_sharp_panel_ids_v1 explicit compatibility; no silent migration",
-  "parent_candidate": "parameter-and-surface-review-dev.20-r1",
-  "geometry_scope": "Preserved sparse construction/edit review; source-bound diagnostic light anchor and bounded sampled coverage only",
+  "parent_candidate": "reflection-anchor-diagnostic-dev.21-r1",
+  "geometry_scope": "Preserved prior constructors and diagnostics; independently implemented linear HOST research evidence, without native geometry changes",
   "new_work_units": [
     "hardsurface.run quality.stage=source_cage",
     "hardsurface.mesh.inspect",
@@ -13,15 +13,16 @@
     "hardsurface.edit-review plan/run/resume",
     "hardsurface.observe sparse_evaluation=source_bound_sparse_observation_v1",
     "hardsurface.subdivision.diagnose surface_export.binding_mode=source_bound_sparse_observation_v1",
-    "hardsurface.observe views[].reflection_anchor.mode=surface_anchor_v1"
+    "hardsurface.observe views[].reflection_anchor.mode=surface_anchor_v1",
+    "hardsurface research-evidence --request: HOST only, no solver"
   ],
   "plugin_cli_entrypoint": "bundled hardsurface-cli; no claim of installed global blenderctl wrapper",
   "source_only_receipt": "partial verified candidate; evaluated shape and production not_run",
   "sparse_full_stage": "fails closed pending implementation and qualification",
   "source_control_placement": "midpoint_corner_columns_unfitted",
-  "host_validation": "Separate frozen HOST receipts report contracts, recovery, safety and actual-export numerical regression; no native qualification is inferred",
-  "native_qualification": "not_run for dev.21-r1 reflected-anchor native adapter",
-  "visual_acceptance": "not_run for dev.21-r1 reflected-anchor images",
+  "host_validation": "Current generic HOST checks and synthetic regressions are separate from historical case evidence; exact test snapshot recorded in development plan",
+  "native_qualification": "not_run for dev.22-r1 research evidence",
+  "visual_acceptance": "not_run for dev.22-r1 research evidence",
   "installation_or_enablement": "not_performed; exact version and execution scope still required",
   "public_release": "source_publication_requested; production_and_visual_acceptance_not_implied",
   "repair_scope": "parameter construction and exact authored insertion only; no arbitrary existing-mesh repair",
@@ -42,7 +43,7 @@
   "axis_reference_schema": "1.1 for explicit corner constructor; legacy1.0 byte compatibility",
   "constructor_version": 6,
   "acceptance_contract": "Caller shape priorities and reference readings remain distinct from mesh validity and protected edits; historical results unchanged",
-  "change_scope": "Opt-in source-bound surface-anchor reflection rig; native triangle/corner/view/matrix identity; separate bounded predicted and observed diagnostic coverage; no geometry/material/normal/camera change",
+  "change_scope": "Independent generic HOST evidence work unit: linear candidate reconstruction, residual verification, local topology, dual-diagonal quality, vertex-sample coverage and exact declared protected identity; no LP, Blender, exact CC solver or self-intersection execution",
   "disk_accounting_contract": "Concurrent observation, not an atomic tree snapshot; exact stable totals, no promise to detect every transient ABA; positive regular-file disappearance tolerated, directory identity and traversal errors fail closed",
   "edit_review_schema": "hardsurface-edit-review/1.1; strict request envelope 1.0 retained",
   "comparison_schema": "subdivision-comparison/1.0",
@@ -50,7 +51,9 @@
   "edit_review_process_bound": 6,
   "edit_review_resume": "Exact same workflow only; accepted stages reused after complete hash binding; unknown child returns reconcile_required",
   "edit_review_acceptance": "Execution and finite samples may complete; shape review pending and production not asserted; reference tolerance is not an acceptance gate",
-  "integration_status": "HOST-audited opt-in successor; native renderer validation pending explicit execution authorization",
+  "integration_status": "HOST-only evidence adapter; complete qualification intentionally incomplete",
   "reflection_anchor_contract": "HS_REFLECTION_ANCHOR_V1; legacy camera-plane path unchanged when absent",
-  "version_policy": "Package/dispatcher protocol remains 0.2.0 for existing CLI compatibility; exact candidate revision and source SHA distinguish dev.21-r1"
+  "version_policy": "Protocol stays 0.2.0; candidate and exact source SHA distinguish dev.22-r1",
+  "research_evidence_schema": "research-evidence/1.0",
+  "research_evidence_acceptance": "Overall incomplete even when implemented checks pass; self-intersection not_run and exact CC/junction solver not_implemented"
 }

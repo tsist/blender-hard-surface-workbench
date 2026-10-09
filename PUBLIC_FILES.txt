@@ -18,6 +18,7 @@ docs/native-surface-fields.md
 docs/observation-memory-budget.md
 docs/public-release.md
 docs/reflection-anchor.md
+docs/research-evidence.md
 docs/source-bound-subdivision-measurement.md
 docs/sparse-panel-strategy.md
 docs/sparse-source-stage.md
@@ -97,6 +98,7 @@ hardsurface/recovery.py
 hardsurface/reference.py
 hardsurface/reflection_anchor.py
 hardsurface/reflection_coverage.py
+hardsurface/research_evidence.py
 hardsurface/robust_geometry_audit.py
 hardsurface/self_intersection.py
 hardsurface/semantic_bore_measure.py
@@ -159,6 +161,7 @@ schemas/quad.panel.schema.json
 schemas/quad.shell.schema.json
 schemas/report.schema.json
 schemas/request.schema.json
+schemas/research-evidence.schema.json
 schemas/selection.schema.json
 schemas/shell.solidify.schema.json
 schemas/sketch.schema.json
@@ -220,6 +223,7 @@ tests/test_reference_approval.py
 tests/test_reference_byte_binding.py
 tests/test_reflection_anchor.py
 tests/test_reflection_diagnostic.py
+tests/test_research_evidence.py
 tests/test_robust_geometry_audit.py
 tests/test_roundover_contract.py
 tests/test_self_intersection.py

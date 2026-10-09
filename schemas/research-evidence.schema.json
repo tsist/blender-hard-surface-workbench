@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "budgets": {
+      "additionalProperties": false,
+      "properties": {
+        "operations": {
+          "maximum": 5000000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "wall_seconds": {
+          "exclusiveMinimum": 0,
+          "maximum": 120,
+          "type": "number"
+        }
+      },
+      "required": [
+        "wall_seconds",
+        "operations"
+      ],
+      "type": "object"
+    },
+    "coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_size": {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "origin": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "required_bins": {
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          },
+          "maxItems": 10000,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "origin",
+        "cell_size",
+        "required_bins"
+      ],
+      "type": "object"
+    },
+    "external_lp": {
+      "additionalProperties": false,
+      "properties": {
+        "model_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "q": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "type": "array"
+        },
+        "source_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "optimal",
+            "feasible",
+            "infeasible",
+            "not_run",
+            "failed",
+            "timeout"
+          ]
+        }
+      },
+      "required": [
+        "source_sha256",
+        "model_sha256",
+        "status"
+      ],
+      "type": "object"
+    },
+    "model": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxItems": 30000,
+          "minItems": 12,
+          "type": "array"
+        },
+        "bounds": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "type": "array"
+        },
+        "equalities": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "type": "array"
+              },
+              "b": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          "maxItems": 500000,
+          "minItems": 0,
+          "type": "array"
+        },
+        "inequalities": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 256,
+                "minItems": 1,
+                "type": "array"
+              },
+              "b": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "a",
+              "b"
+            ],
+            "type": "object"
+          },
+          "maxItems": 500000,
+          "minItems": 0,
+          "type": "array"
+        },
+        "variable_count": {
+          "maximum": 256,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "variable_count",
+        "basis",
+        "inequalities",
+        "equalities",
+        "bounds"
+      ],
+      "type": "object"
+    },
+    "protected_vertex_ids": {
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 10000,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "quality": {
+      "additionalProperties": false,
+      "properties": {
+        "max_edge_ratio": {
+          "minimum": 1,
+          "type": "number"
+        },
+        "max_warp_degrees": {
+          "maximum": 180,
+          "minimum": 0,
+          "type": "number"
+        },
+        "min_corner_degrees": {
+          "maximum": 180,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "max_warp_degrees",
+        "min_corner_degrees",
+        "max_edge_ratio"
+      ],
+      "type": "object"
+    },
+    "residual_tolerance": {
+      "maximum": 0.001,
+      "minimum": 0,
+      "type": "number"
+    },
+    "schema_version": {
+      "const": "research-evidence/1.0"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "faces": {
+          "items": {
+            "items": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "maxItems": 4,
+            "minItems": 4,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "maxItems": 20000,
+          "minItems": 1,
+          "type": "array"
+        },
+        "vertex_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 10000,
+          "minItems": 4,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "vertices": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          },
+          "maxItems": 10000,
+          "minItems": 4,
+          "type": "array"
+        }
+      },
+      "required": [
+        "vertices",
+        "faces",
+        "vertex_ids"
+      ],
+      "type": "object"
+    },
+    "source_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "source",
+    "source_sha256",
+    "model",
+    "external_lp",
+    "protected_vertex_ids",
+    "coverage",
+    "quality",
+    "budgets",
+    "residual_tolerance"
+  ],
+  "title": "Generic HOST research evidence 1.0",
+  "type": "object"
+}

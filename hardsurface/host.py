@@ -724,6 +724,7 @@ def parser():
     p.add_argument('--jobs-dir',default=DEFAULT_JOBS);p.add_argument('--blender',default=DEFAULT_BLENDER);p.add_argument('--compact',action='store_true');p.add_argument('--async',dest='background',action='store_true')
     sub=p.add_subparsers(dest='command',required=True)
     hs=sub.add_parser('hardsurface');actions=hs.add_subparsers(dest='action',required=True)
+    actions.add_parser('research-evidence').add_argument('--request',type=Path,required=True)
     d=actions.add_parser('describe');d.add_argument('--section',default='request')
     for name in ('plan','run','study','stage'):
         a=actions.add_parser(name);a.add_argument('--request',type=Path,required=True)
@@ -774,13 +775,19 @@ def main(argv=None):
             else:result=store.status(a.job_id)
         elif a.action=='describe':
             from .contract import schema
-            if a.section=='edit-review':
+            if a.section=='research-evidence':
+                from .research_evidence import schema
+                result=schema()
+            elif a.section=='edit-review':
                 from . import edit_review
                 result=edit_review.schema()
             elif a.section in ('validate','observe','topology','subdivision.diagnose','mesh.inspect'):
                 from . import validation,observation,topology,subdivision,source_mesh_inspection
                 result={'validate':validation,'observe':observation,'topology':topology,'subdivision.diagnose':subdivision,'mesh.inspect':source_mesh_inspection}[a.section].schema()
             else:result=schema(a.section)
+        elif a.action=='research-evidence':
+            from .research_evidence import read_and_evaluate
+            result=read_and_evaluate(a.request)
         elif a.action=='edit-review':
             from . import edit_review
             result=(edit_review.plan(load(a.request),a.blender) if a.review_action=='plan' else
