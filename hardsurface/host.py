@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse,contextlib,copy,json,os,shutil,subprocess,sys,time,traceback,uuid,fcntl,math,hashlib
 from pathlib import Path
+from . import __version__
 from .io import RuntimeFailure,atomic_json,descriptor,digest,verify_descriptor,tree_manifest,checked_path,checkpoint_evidence_artifacts
 from .protection import ProtectedInputs,stage_inputs,recheck_originals
 ROOT=Path(__file__).resolve().parents[1]
@@ -664,7 +665,7 @@ def _read_only_impl(action,request,job,store,blender,started):
 
 
 def parser():
-    p=argparse.ArgumentParser(description='Hard Surface Workbench 0.2.0 development CLI; no source overwrite')
+    p=argparse.ArgumentParser(description=f'Hard Surface Workbench {__version__} development CLI; no source overwrite')
     p.add_argument('--jobs-dir',default=DEFAULT_JOBS);p.add_argument('--blender',default=DEFAULT_BLENDER);p.add_argument('--compact',action='store_true');p.add_argument('--async',dest='background',action='store_true')
     sub=p.add_subparsers(dest='command',required=True)
     hs=sub.add_parser('hardsurface');actions=hs.add_subparsers(dest='action',required=True)

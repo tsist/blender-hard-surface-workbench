@@ -1,4 +1,4 @@
-# Hard Surface Workbench 0.2.0
+# Hard Surface Workbench 0.2.1
 
 Experimental parameter-driven Blender hard-surface work units, with a standalone source CLI, JSON Schemas, and a minimal Blender sidebar.
 
@@ -19,7 +19,9 @@ There are no embedded project profiles or preset design dimensions. Public numer
 
 ## Runtime and start
 
-Use Linux, host Python 3.12+ and a separately installed Blender 5.2.x. Actual Blender qualification and its precise build are described in [validation](docs/validation.md); accepting a version is not evidence that every build has been tested. Saved-file protection requires a supported local Linux filesystem and rejects unsupported filesystems.
+The extension preview supports the sidebar's text validation in Windows Blender 5.2.2 LTS and 5.3.0. Use **Preferences → Get Extensions → Install from Disk**, select `hard-surface-workbench-0.2.1.zip`, then open **3D View → Sidebar → Hard Surface**. The sidebar validates the selected request text and reports its planned steps. [Release files](https://github.com/tsist/blender-hard-surface-workbench/releases/tag/v0.2.1)
+
+The standalone CLI still requires Linux, host Python 3.12+ and a separately installed Blender 5.2.x. Saved-file protection requires a supported local Linux filesystem. See the tested builds and scenarios in [validation](docs/validation.md).
 
 From this directory:
 
@@ -47,7 +49,7 @@ python3 -B scripts/build_distribution.py --output /tmp/your-new-build
 
 The manifest-based builder creates a source ZIP, a Blender extension ZIP, checksums and a member manifest. It refuses existing output directories. Unpack source archives into a new directory. The extension archive is the sidebar/domain package. Use the source package for the standalone backend; it has no full blenderctl copy or external Python dependency.
 
-The package is source-distributed for review and development. **Extension installation, enablement, restart behavior and interactive end-to-end GUI use are not qualified by host tests or static packaging.** The sidebar validates request text; it is not a full interactive modeling application.
+The [runtime validation](docs/validation.md) includes isolated installation, enablement across restart, the sidebar validation operator and native construction fixtures. The host CI and static package build exercise separate checks. Interactive modeling and the full Linux worker on 5.3 remain outside this preview's validation.
 
 Structured quad constructors do not need `slvs`. Legacy constraint solving requires a separately reviewed deployment; the native binary is not redistributed and the optional native tests skip when no deployment is configured. See [third-party notices](THIRD_PARTY_NOTICES.md).
 

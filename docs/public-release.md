@@ -1,4 +1,10 @@
-# Experimental public source: 0.2.0
+# Hard Surface Workbench public releases
+
+## 0.2.1 extension preview
+
+Released 2026-11-19. Windows Blender 5.2.2 LTS and 5.3.0 passed extension installation, enablement, request validation and native fixture geometry with independent saved-file reopen. The Linux host and worker remain qualified on the documented 5.2.x baseline. [Runtime checks](validation.md)
+
+## 0.2.0 experimental public source
 
 Prepared 2026-10-05. This release exposes a bounded parameter-driven modeling implementation and its numerical tests. It does not certify arbitrary mechanical designs.
 

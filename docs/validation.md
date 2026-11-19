@@ -26,6 +26,14 @@ The optional generic CLI qualification script uses an existing Blender runtime a
 
 Precise final test counts, tested Blender build and inspection results should be taken from the release/PR's verified results, not inferred from historical runs or source version numbers.
 
+## Windows Blender extension preview 0.2.1
+
+Blender 5.2.2 LTS (`d13f752e3b9c`) and 5.3.0 (`02f0899d78e3`) each installed the extension ZIP in an isolated profile and enabled it across restart. The installed sidebar operator validated a typed request without changing model geometry. The installed domain code built a panel, a mirrored-seat shell and a fastener from public synthetic parameters. Both actual control and evaluated quad gates passed and an independent process reopened the saved fixture with matching geometry, topology and polygon counts.
+
+The existing Blender-native suites also ran on Windows with each build. Twelve quad/rejection fixtures passed. Of 40 core cases, 33 passed and seven reached the existing POSIX-only saved-source path contract. Those seven cases require a Linux run for saved-source coverage. The Linux host, process supervision and file-protection baseline remains Blender 5.2.x.
+
+Reproduce the extension smoke with a freshly installed and enabled ZIP. In Blender background mode with script auto-execution disabled, run `tests/blender_extension_smoke.py -- build <new-output-directory>`. Start a second Blender process on the saved `parameterized-fixtures.blend` and invoke the script with `-- reopen <same-output-directory>`.
+
 ## Release qualification recorded on 2026-10-05
 
 The pre-split qualification host suite ran 487 tests: 485 passed and the two optional native solver tests skipped because no solver deployment was configured. Python 3.12 and 3.13 were checked separately. The standalone repository removes three CLI-dispatch tests (now owned by blenderctl) and adds six standalone-distribution checks: 490 tests, 488 passed and two optional solver skips.

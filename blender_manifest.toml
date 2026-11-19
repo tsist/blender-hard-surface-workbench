@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "hard_surface_workbench"
-version = "0.2.0"
+version = "0.2.1"
 name = "Hard Surface Workbench"
 tagline = "Bounded mechanical mesh work units with candidate-only saves"
 maintainer = "Development preview"

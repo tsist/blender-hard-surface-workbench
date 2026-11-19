@@ -107,6 +107,7 @@ schemas/step.schema.json
 scripts/build_distribution.py
 scripts/verify_reproducible.py
 tests/blender_core_suite.py
+tests/blender_extension_smoke.py
 tests/blender_quad_gate_qualification.py
 tests/generic_cli_qualification.py
 tests/test_budgets.py
