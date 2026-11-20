@@ -146,7 +146,18 @@ def main():
     payload=json.loads(Path(args[0]).read_text());report_path=Path(payload['report_path']).resolve();job=Path(payload.get('job_dir',report_path.parent)).resolve();job.mkdir(parents=True,exist_ok=True)
     safe_output(report_path,job)
     try:
-        if tuple(bpy.app.version[:2]) != (5,2):raise CoreError('BLENDER_VERSION_UNSUPPORTED','This adapter supports Blender 5.2.x; other runtime families require qualification')
+        version=tuple(bpy.app.version)
+        if version[:2] != (5,2):
+            linux53=(sys.platform=='linux' and version==(5,3,0)
+                     and bpy.app.build_hash==b'02f0899d78e3')
+            if not linux53:
+                raise CoreError('BLENDER_VERSION_UNSUPPORTED','Use Blender 5.2.x or the qualified Linux Blender 5.3.0 build 02f0899d78e3')
+            mode=payload.get('action')
+            params=payload.get('request',{}).get('params',{})
+            if mode not in ('run','build','stage','verify','inspect') or (
+                    mode in ('run','build') and
+                    (params.get('wire',{}).get('enabled',True) or params.get('preview') is not None)):
+                raise CoreError('BLENDER_53_MODE_UNSUPPORTED','Linux Blender 5.3.0 is qualified for construction with explicit wire.enabled=false and no preview')
         source=payload.get('source')
         if isinstance(source,dict):source=source.get('file',source.get('path'))
         if source:open_source(source)

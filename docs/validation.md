@@ -30,9 +30,15 @@ Precise final test counts, tested Blender build and inspection results should be
 
 Blender 5.2.2 LTS (`d13f752e3b9c`) and 5.3.0 (`02f0899d78e3`) each installed the extension ZIP in an isolated profile and enabled it across restart. The installed sidebar operator validated a typed request without changing model geometry. The installed domain code built a panel, a mirrored-seat shell and a fastener from public synthetic parameters. Both actual control and evaluated quad gates passed and an independent process reopened the saved fixture with matching geometry, topology and polygon counts.
 
-The existing Blender-native suites also ran on Windows with each build. Twelve quad/rejection fixtures passed. Of 40 core cases, 33 passed and seven reached the existing POSIX-only saved-source path contract. Those seven cases require a Linux run for saved-source coverage. The Linux host, process supervision and file-protection baseline remains Blender 5.2.x.
+The existing Blender-native suites also ran on Windows with each build. Twelve quad/rejection fixtures passed. Of 40 core cases, 33 passed and seven reached the existing POSIX-only saved-source path contract. Those seven cases require a Linux run for saved-source coverage. The full Linux host, process supervision and file-protection baseline remains Blender 5.2.x.
 
 Reproduce the extension smoke with a freshly installed and enabled ZIP. In Blender background mode with script auto-execution disabled, run `tests/blender_extension_smoke.py -- build <new-output-directory>`. Start a second Blender process on the saved `parameterized-fixtures.blend` and invoke the script with `-- reopen <same-output-directory>`.
+
+## Linux Blender 5.3.0 non-rendering construction
+
+This worker admits only the official 5.3.0 Linux release build `02f0899d78e3` in addition to the existing 5.2.x path. For 5.3 construction, disable wire explicitly and omit the preview object. Worker actions outside construction and its file inspection/staging/reopen support are not qualified here. The 5.2.x path is unchanged.
+
+To reproduce the smoke check, run the standalone CLI on `fixtures/box.json` and on a **copy** of `fixtures/box-cut-bevel.json` with `params.preview` removed; keep `params.wire.enabled=false`. Use distinct new private Linux job directories. Check both JSON job and technical outcomes and the independently reopened candidate. The unchanged preview-enabled aperture fixture must return `BLENDER_53_MODE_UNSUPPORTED` with no candidate on this build. Do not read this check as qualification of rendering, wire images, saved-source workflows, or every constructor on 5.3.
 
 ## Release qualification recorded on 2026-10-05
 
